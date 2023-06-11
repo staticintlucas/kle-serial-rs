@@ -5,10 +5,10 @@ use crate::{Color, DefaultColor, Key, Result};
 use crate::{Legend, Switch, NUM_LEGENDS};
 
 use itertools::izip;
-pub use json::{KleKeyboard, KleLegendsOrProps, KlePropsObject};
+pub(crate) use json::{KleKeyboard, KleLegendsOrProps, KlePropsObject};
 
 #[derive(Debug)]
-pub struct KleProps {
+pub(crate) struct KleProps {
     // Per-key properties
     x: f64,
     y: f64,
@@ -59,7 +59,7 @@ impl Default for KleProps {
 }
 
 impl KleProps {
-    pub fn update(&mut self, props: KlePropsObject) {
+    pub(crate) fn update(&mut self, props: KlePropsObject) {
         let f = props.f.unwrap_or(self.f);
         let fa = if let Some(fa) = props.fa {
             std::array::from_fn(|i| match fa.get(i).copied() {
@@ -104,7 +104,7 @@ impl KleProps {
     }
 
     #[inline]
-    pub fn next_key(&mut self) {
+    pub(crate) fn next_key(&mut self) {
         // Increment x
         self.x += self.w.max(self.x2 + self.w2);
         // Reset per-key properties
@@ -120,13 +120,13 @@ impl KleProps {
     }
 
     #[inline]
-    pub fn next_line(&mut self) {
+    pub(crate) fn next_line(&mut self) {
         self.next_key();
         self.x = 0.;
         self.y += 1.;
     }
 
-    pub fn build_key(&self, legends: String) -> Result<Key> {
+    pub(crate) fn build_key(&self, legends: &str) -> Result<Key> {
         let legends = izip!(legends.lines(), self.fa, self.ta).map(|(text, size, color)| {
             (!text.is_empty()).then_some(Legend {
                 text: text.into(),

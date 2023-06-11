@@ -17,7 +17,10 @@ const LEGEND_MAPPING: [[usize; NUM_LEGENDS]; 8] = [
     [4, 0, 1, 2, 10, 3, 5, 6, 7, 8, 9, 11], // 7 = center front & x & y
 ];
 
-pub fn realign_legends<T>(values: T, alignment: usize) -> Result<[Option<Legend>; NUM_LEGENDS]>
+pub(crate) fn realign_legends<T>(
+    values: T,
+    alignment: usize,
+) -> Result<[Option<Legend>; NUM_LEGENDS]>
 where
     T: IntoIterator<Item = Option<Legend>>,
 {

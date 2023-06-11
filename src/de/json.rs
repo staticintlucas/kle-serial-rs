@@ -44,7 +44,7 @@ where
 
 #[derive(Deserialize, Default, Debug, Clone)]
 #[serde(default)]
-pub struct KlePropsObject {
+pub(crate) struct KlePropsObject {
     pub x: Option<f64>,
     pub y: Option<f64>,
     pub w: Option<f64>,
@@ -70,13 +70,14 @@ pub struct KlePropsObject {
 // Represents either a key or a JSON object containing properties for the next key(s)
 #[derive(Deserialize, Debug, Clone)]
 #[serde(untagged)]
-pub enum KleLegendsOrProps {
+pub(crate) enum KleLegendsOrProps {
     Props(Box<KlePropsObject>),
     Legend(String),
 }
 
 #[derive(Debug, Clone)]
-pub struct KleKeyboard {
+pub(crate) struct KleKeyboard {
+    #[allow(dead_code)] // TODO
     pub props: json::Map<String, json::Value>, // TODO global layout properties are unused at the moment
     pub rows: Vec<Vec<KleLegendsOrProps>>,
 }

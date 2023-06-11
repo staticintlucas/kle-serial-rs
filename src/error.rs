@@ -12,7 +12,7 @@ pub type Result<T> = std::result::Result<T, Error>;
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Alignment(alignment) => write!(f, "Unsupported legend alignment {}", alignment),
+            Self::Alignment(alignment) => write!(f, "Unsupported legend alignment {alignment}"),
             Self::Json(error) => write!(f, "Invalid KLE JSON: {error}"),
         }
     }

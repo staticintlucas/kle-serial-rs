@@ -1,3 +1,7 @@
+#![warn(missing_docs, dead_code)]
+#![warn(clippy::all, clippy::pedantic, clippy::cargo)]
+#![allow(missing_docs, clippy::missing_errors_doc)] // TODO
+
 mod de;
 mod error;
 mod utils;
@@ -49,6 +53,7 @@ pub struct Switch {
 }
 
 #[derive(Debug, Clone, Default)]
+#[allow(clippy::struct_excessive_bools)]
 pub struct Key {
     pub legends: [Option<Legend>; NUM_LEGENDS],
     #[default(Color::default_key())]
@@ -116,7 +121,7 @@ impl Keyboard {
                         state.update(*props);
                     }
                     KleLegendsOrProps::Legend(text) => {
-                        keys.push(state.build_key(text)?);
+                        keys.push(state.build_key(&text)?);
                         state.next_key();
                     }
                 }
