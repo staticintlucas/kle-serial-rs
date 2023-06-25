@@ -12,28 +12,19 @@ pub use error::{Error, Result};
 
 use de::{KleKeyboard, KleLegendsOrProps, KleProps};
 
-const NUM_LEGENDS: usize = 12; // Number of legends on a key
-
-trait DefaultColor {
-    fn default_background() -> Self;
-    fn default_key() -> Self;
-    fn default_legend() -> Self;
-}
-
 pub type Color = rgb::RGBA8;
 
-impl DefaultColor for Color {
-    fn default_background() -> Self {
-        Self::new(0xEE, 0xEE, 0xEE, 0xFF) // #EEEEEE
-    }
+const NUM_LEGENDS: usize = 12; // Number of legends on a key
 
-    fn default_key() -> Self {
-        Self::new(0xCC, 0xCC, 0xCC, 0xFF) // #CCCCCC
-    }
+pub(crate) mod defaults {
+    use crate::Color;
 
-    fn default_legend() -> Self {
-        Self::new(0x00, 0x00, 0x00, 0xFF) // #000000
-    }
+    pub const FONT_SIZE: usize = 3; // The default font size
+    pub const ALIGNMENT: usize = 4; // The default alignment
+
+    pub const BACKGROUND_COLOR: Color = Color::new(0xEE, 0xEE, 0xEE, 0xFF); // #EEEEEE
+    pub const KEY_COLOR: Color = Color::new(0xCC, 0xCC, 0xCC, 0xFF); // #CCCCCC
+    pub const LEGEND_COLOR: Color = Color::new(0x00, 0x00, 0x00, 0xFF); // #000000
 }
 
 #[derive(Debug, Clone, Default)]
@@ -41,7 +32,7 @@ pub struct Legend {
     pub text: String,
     #[default = 4]
     pub size: usize,
-    #[default(Color::default_legend())]
+    #[default(defaults::LEGEND_COLOR)]
     pub color: Color,
 }
 
@@ -56,7 +47,7 @@ pub struct Switch {
 #[allow(clippy::struct_excessive_bools)]
 pub struct Key {
     pub legends: [Option<Legend>; NUM_LEGENDS],
-    #[default(Color::default_key())]
+    #[default(defaults::KEY_COLOR)]
     pub color: Color,
     pub x: f64,
     pub y: f64,
@@ -89,7 +80,7 @@ pub struct Background {
 
 #[derive(Debug, Clone, Default)]
 pub struct Metadata {
-    #[default(Color::default_background())]
+    #[default(defaults::BACKGROUND_COLOR)]
     pub background_color: Color,
     pub background: Background,
     pub radii: String,

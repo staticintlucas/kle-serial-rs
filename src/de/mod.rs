@@ -1,8 +1,8 @@
 mod json;
 
 use crate::utils::realign_legends;
-use crate::{Color, DefaultColor, Key, Result};
-use crate::{Legend, Switch, NUM_LEGENDS};
+use crate::{defaults, NUM_LEGENDS};
+use crate::{Color, Key, Legend, Result, Switch};
 
 use itertools::izip;
 pub(crate) use json::{KleKeyboard, KleLegendsOrProps, KlePropsObject};
@@ -33,8 +33,6 @@ pub(crate) struct KleProps {
 
 impl Default for KleProps {
     fn default() -> Self {
-        const DEFAULT_FONT_SIZE: usize = 3; // The default font size
-        const DEFAULT_ALIGNMENT: usize = 4; // The default alignment
         Self {
             x: 0.,
             y: 0.,
@@ -47,13 +45,13 @@ impl Default for KleProps {
             l: false,
             n: false,
             d: false,
-            c: Color::default_key(),
-            t: Color::default_legend(),
-            ta: [Color::default_legend(); NUM_LEGENDS],
-            a: DEFAULT_ALIGNMENT,
+            c: defaults::KEY_COLOR,
+            t: defaults::LEGEND_COLOR,
+            ta: [defaults::LEGEND_COLOR; NUM_LEGENDS],
+            a: defaults::ALIGNMENT,
             p: String::new(),
-            f: DEFAULT_FONT_SIZE,
-            fa: [DEFAULT_FONT_SIZE; NUM_LEGENDS],
+            f: defaults::FONT_SIZE,
+            fa: [defaults::FONT_SIZE; NUM_LEGENDS],
         }
     }
 }
