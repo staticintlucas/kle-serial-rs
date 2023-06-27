@@ -5,55 +5,48 @@ use crate::{defaults, NUM_LEGENDS};
 use crate::{Color, Key, Legend, Result, Switch};
 
 use itertools::izip;
+use smart_default::SmartDefault as Default;
+
 pub(crate) use json::{KleKeyboard, KleLegendsOrProps, KlePropsObject};
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
+#[allow(clippy::struct_excessive_bools)]
 pub(crate) struct KleProps {
     // Per-key properties
     x: f64,
     y: f64,
+    #[default = 1.]
     w: f64,
+    #[default = 1.]
     h: f64,
     x2: f64,
     y2: f64,
+    #[default = 1.]
     w2: f64,
+    #[default = 1.]
     h2: f64,
     l: bool, // stepped
     n: bool, // homing
     d: bool, // decal
-    // Persistent properties
-    c: Color,                 // color
-    t: Color,                 // fallback legend color
-    ta: [Color; NUM_LEGENDS], // legend color array
-    a: usize,                 // alignment
-    p: String,                // profile
-    f: usize,                 // fallback font size
-    fa: [usize; NUM_LEGENDS], // font size array
-}
 
-impl Default for KleProps {
-    fn default() -> Self {
-        Self {
-            x: 0.,
-            y: 0.,
-            w: 1.,
-            h: 1.,
-            x2: 0.,
-            y2: 0.,
-            w2: 1.,
-            h2: 1.,
-            l: false,
-            n: false,
-            d: false,
-            c: defaults::KEY_COLOR,
-            t: defaults::LEGEND_COLOR,
-            ta: [defaults::LEGEND_COLOR; NUM_LEGENDS],
-            a: defaults::ALIGNMENT,
-            p: String::new(),
-            f: defaults::FONT_SIZE,
-            fa: [defaults::FONT_SIZE; NUM_LEGENDS],
-        }
-    }
+    // Persistent properties
+    g: bool,    // ghosted
+    sm: String, // switch mount
+    sb: String, // switch brand
+    st: String, // switch type
+    #[default(defaults::KEY_COLOR)]
+    c: Color, // color
+    #[default(defaults::LEGEND_COLOR)]
+    t: Color, // fallback legend color
+    #[default([defaults::LEGEND_COLOR; NUM_LEGENDS])]
+    ta: [Color; NUM_LEGENDS], // legend color array
+    #[default(defaults::ALIGNMENT)]
+    a: usize, // alignment
+    p: String,  // profile
+    #[default(defaults::FONT_SIZE)]
+    f: usize, // fallback font size
+    #[default([defaults::FONT_SIZE; NUM_LEGENDS])]
+    fa: [usize; NUM_LEGENDS], // font size array
 }
 
 impl KleProps {
@@ -92,6 +85,10 @@ impl KleProps {
         self.n = props.n.unwrap_or(false);
         self.d = props.d.unwrap_or(false);
         // Persistent properties
+        self.g = props.g.unwrap_or(self.g);
+        self.sm = props.sm.unwrap_or(self.sm.clone());
+        self.sb = props.sb.unwrap_or(self.sb.clone());
+        self.st = props.st.unwrap_or(self.st.clone());
         self.c = props.c.unwrap_or(self.c);
         self.t = t;
         self.ta = ta;
@@ -149,8 +146,12 @@ impl KleProps {
             rx: 0.,       // TODO: self.rx
             ry: 0.,       // TODO: self.ry
             profile: self.p.clone(),
-            ghosted: false,            // TODO: self.g
-            switch: Switch::default(), // TODO: self.sm
+            ghosted: self.g,
+            switch: Switch {
+                mount: self.sm.clone(),
+                brand: self.sb.clone(),
+                typ: self.st.clone(),
+            },
             stepped: self.l,
             homing: self.n,
             decal: self.d,

@@ -56,6 +56,10 @@ pub(crate) struct KlePropsObject {
     pub l: Option<bool>,
     pub n: Option<bool>,
     pub d: Option<bool>,
+    pub g: Option<bool>,
+    pub sm: Option<String>,
+    pub sb: Option<String>,
+    pub st: Option<String>,
     #[serde(deserialize_with = "de_color")]
     pub c: Option<Color>,
     #[serde(deserialize_with = "de_nl_delimited_colors")]
