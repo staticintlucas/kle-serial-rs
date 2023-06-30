@@ -1,8 +1,8 @@
 mod json;
 
-use crate::utils::realign_legends;
+use crate::utils::{realign_legends, Alignment};
 use crate::{defaults, NUM_LEGENDS};
-use crate::{Color, Key, Legend, Result, Switch};
+use crate::{Color, Key, Legend, Switch};
 
 use itertools::izip;
 use smart_default::SmartDefault as Default;
@@ -47,7 +47,7 @@ pub(crate) struct KleProps {
     #[default([defaults::LEGEND_COLOR; NUM_LEGENDS])]
     ta: [Color; NUM_LEGENDS], // legend color array
     #[default(defaults::ALIGNMENT)]
-    a: usize, // alignment
+    a: Alignment, // alignment
     p: String,  // profile
     #[default(defaults::FONT_SIZE)]
     f: usize, // fallback font size
@@ -144,7 +144,7 @@ impl KleProps {
         self.y += 1.;
     }
 
-    pub(crate) fn build_key(&self, legends: &str) -> Result<Key> {
+    pub(crate) fn build_key(&self, legends: &str) -> Key {
         let legends = izip!(legends.lines(), self.fa, self.ta).map(|(text, size, color)| {
             (!text.is_empty()).then_some(Legend {
                 text: text.into(),
@@ -152,9 +152,9 @@ impl KleProps {
                 color,
             })
         });
-        let legends = realign_legends(legends, self.a)?;
+        let legends = realign_legends(legends, self.a);
 
-        Ok(Key {
+        Key {
             legends,
             color: self.c,
             x: self.x,
@@ -178,6 +178,6 @@ impl KleProps {
             stepped: self.l,
             homing: self.n,
             decal: self.d,
-        })
+        }
     }
 }

@@ -5,6 +5,7 @@ use serde::de::{value::SeqAccessDeserializer, Error, SeqAccess, Unexpected, Visi
 use serde::{Deserialize, Deserializer};
 use serde_json as json;
 
+use crate::utils::Alignment;
 use crate::Color;
 
 fn color_from_str<'de, D>(value: &str) -> Result<Color, D::Error>
@@ -67,7 +68,7 @@ pub(crate) struct KlePropsObject {
     pub c: Option<Color>,
     #[serde(deserialize_with = "de_nl_delimited_colors")]
     pub t: Option<Vec<Option<Color>>>,
-    pub a: Option<usize>,
+    pub a: Option<Alignment>,
     pub p: Option<String>,
     pub f: Option<usize>,
     pub f2: Option<usize>,

@@ -3,12 +3,10 @@
 #![allow(missing_docs, clippy::missing_errors_doc)] // TODO
 
 mod de;
-mod error;
 mod utils;
 
+use serde::Deserialize;
 use smart_default::SmartDefault as Default;
-
-pub use error::{Error, Result};
 
 use de::{KleKeyboard, KleLegendsOrProps, KleProps};
 
@@ -17,14 +15,14 @@ pub type Color = rgb::RGBA8;
 const NUM_LEGENDS: usize = 12; // Number of legends on a key
 
 pub(crate) mod defaults {
-    use crate::Color;
+    use crate::{utils::Alignment, Color};
 
-    pub const FONT_SIZE: usize = 3; // The default font size
-    pub const ALIGNMENT: usize = 4; // The default alignment
+    pub(crate) const FONT_SIZE: usize = 3; // The default font size
+    pub(crate) const ALIGNMENT: Alignment = Alignment::default(); // The default alignment
 
-    pub const BACKGROUND_COLOR: Color = Color::new(0xEE, 0xEE, 0xEE, 0xFF); // #EEEEEE
-    pub const KEY_COLOR: Color = Color::new(0xCC, 0xCC, 0xCC, 0xFF); // #CCCCCC
-    pub const LEGEND_COLOR: Color = Color::new(0x00, 0x00, 0x00, 0xFF); // #000000
+    pub(crate) const BACKGROUND_COLOR: Color = Color::new(0xEE, 0xEE, 0xEE, 0xFF); // #EEEEEE
+    pub(crate) const KEY_COLOR: Color = Color::new(0xCC, 0xCC, 0xCC, 0xFF); // #CCCCCC
+    pub(crate) const LEGEND_COLOR: Color = Color::new(0x00, 0x00, 0x00, 0xFF); // #000000
 }
 
 #[derive(Debug, Clone, Default)]
@@ -98,9 +96,12 @@ pub struct Keyboard {
     pub keys: Vec<Key>,
 }
 
-impl Keyboard {
-    pub fn from_json(json: &str) -> Result<Self> {
-        let kle: KleKeyboard = serde_json::from_str(json)?;
+impl<'de> Deserialize<'de> for Keyboard {
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let kle = KleKeyboard::deserialize(deserializer)?;
 
         let mut state = KleProps::default();
         let mut keys = Vec::with_capacity(kle.rows.iter().flatten().count());
@@ -112,7 +113,7 @@ impl Keyboard {
                         state.update(*props);
                     }
                     KleLegendsOrProps::Legend(text) => {
-                        keys.push(state.build_key(&text)?);
+                        keys.push(state.build_key(&text));
                         state.next_key();
                     }
                 }

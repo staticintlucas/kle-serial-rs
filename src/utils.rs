@@ -1,8 +1,9 @@
 use itertools::Itertools;
+use serde::de::{Error, Unexpected};
+use serde::Deserialize;
 
 use crate::Legend;
 use crate::NUM_LEGENDS;
-use crate::{Error, Result};
 
 // This map is the same as that of kle-serial. Note the blanks are also filled
 // in, so we're slightly more permissive with not-strictly-valid KLE input.
@@ -17,16 +18,59 @@ const LEGEND_MAPPING: [[usize; NUM_LEGENDS]; 8] = [
     [4, 0, 1, 2, 10, 3, 5, 6, 7, 8, 9, 11], // 7 = center front & x & y
 ];
 
-pub(crate) fn realign_legends<T>(
-    values: T,
-    alignment: usize,
-) -> Result<[Option<Legend>; NUM_LEGENDS]>
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct Alignment(usize);
+
+impl Alignment {
+    pub(crate) const MAX: Self = Self(LEGEND_MAPPING.len() - 1);
+
+    pub(crate) const fn new(alignment: usize) -> Option<Self> {
+        if alignment <= Self::MAX.0 {
+            Some(Self(alignment))
+        } else {
+            None
+        }
+    }
+
+    pub(crate) const fn default() -> Self {
+        Self(4) // 4 is the default used by KLE
+    }
+}
+
+impl From<Alignment> for usize {
+    fn from(value: Alignment) -> Self {
+        value.0
+    }
+}
+
+impl<'de> Deserialize<'de> for Alignment {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let alignment = usize::deserialize(deserializer)?;
+
+        Self::new(alignment).ok_or_else(|| {
+            D::Error::invalid_value(
+                Unexpected::Unsigned(alignment as u64),
+                &format!("0 <= x <= {}", Self::MAX.0).as_str(),
+            )
+        })
+    }
+}
+
+impl Default for Alignment {
+    fn default() -> Self {
+        Self::default()
+    }
+}
+
+pub(crate) fn realign_legends<T>(values: T, alignment: Alignment) -> [Option<Legend>; NUM_LEGENDS]
 where
     T: IntoIterator<Item = Option<Legend>>,
 {
-    let mapping = LEGEND_MAPPING
-        .get(alignment)
-        .ok_or(Error::Alignment(alignment))?;
+    // Guaranteed to be in range because of newtype
+    let mapping = LEGEND_MAPPING[usize::from(alignment)];
 
     let mut values = mapping
         .iter()
@@ -34,14 +78,12 @@ where
         .sorted_by_key(|el| el.0)
         .map(|el| el.1);
 
-    Ok(std::array::from_fn(|_| values.next().unwrap_or(None)))
+    std::array::from_fn(|_| values.next().unwrap_or(None))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    use assert_matches::assert_matches;
 
     #[test]
     fn test_realign_legends() {
@@ -53,11 +95,9 @@ mod tests {
         });
         let expected = ["A", "I", "C", "G", "J", "H", "B", "K", "D", "F", "E", "L"];
 
-        let result = realign_legends(legends.clone(), 4).unwrap();
+        let result = realign_legends(legends.clone(), Alignment::new(4).unwrap());
         let result_text = result.map(|l| l.unwrap().text);
 
         assert_eq!(result_text, expected);
-
-        assert_matches!(realign_legends(legends, 69), Err(Error::Alignment(69)))
     }
 }
