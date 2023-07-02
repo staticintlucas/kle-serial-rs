@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use itertools::Itertools;
 use serde::de::{Error, Unexpected};
 use serde::Deserialize;
@@ -18,7 +20,7 @@ const LEGEND_MAPPING: [[usize; NUM_LEGENDS]; 8] = [
     [4, 0, 1, 2, 10, 3, 5, 6, 7, 8, 9, 11], // 7 = center front & x & y
 ];
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub(crate) struct Alignment(usize);
 
 impl Alignment {
@@ -34,6 +36,12 @@ impl Alignment {
 
     pub(crate) const fn default() -> Self {
         Self(4) // 4 is the default used by KLE
+    }
+}
+
+impl Debug for Alignment {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
     }
 }
 
