@@ -87,7 +87,7 @@ pub(crate) enum KleLegendsOrProps {
 pub(crate) struct KleKeyboard {
     #[allow(dead_code)] // TODO
     pub props: json::Map<String, json::Value>, // TODO global layout properties are unused at the moment
-    pub rows: Vec<Vec<KleLegendsOrProps>>,
+    pub layout: Vec<Vec<KleLegendsOrProps>>,
 }
 
 impl<'de> Deserialize<'de> for KleKeyboard {
@@ -118,19 +118,19 @@ impl<'de> Deserialize<'de> for KleKeyboard {
                 let result = match seq.next_element()? {
                     None => {
                         let props = json::Map::new();
-                        let rows = Vec::new();
-                        Self::Value { props, rows }
+                        let layout = Vec::new();
+                        Self::Value { props, layout }
                     }
                     Some(MapOrSeq::Props(props)) => {
-                        let rows = Vec::deserialize(SeqAccessDeserializer::new(seq))?;
-                        Self::Value { props, rows }
+                        let layout = Vec::deserialize(SeqAccessDeserializer::new(seq))?;
+                        Self::Value { props, layout }
                     }
                     Some(MapOrSeq::Row(row)) => {
                         let props = json::Map::new();
-                        let mut rows = Vec::with_capacity(seq.size_hint().unwrap_or(0).min(4096));
-                        rows.push(row);
-                        rows.extend(Vec::deserialize(SeqAccessDeserializer::new(seq))?);
-                        Self::Value { props, rows }
+                        let mut layout = Vec::with_capacity(seq.size_hint().unwrap_or(0).min(4096));
+                        layout.push(row);
+                        layout.extend(Vec::deserialize(SeqAccessDeserializer::new(seq))?);
+                        Self::Value { props, layout }
                     }
                 };
 
@@ -187,22 +187,22 @@ mod tests {
         assert_eq!(result1.props.len(), 1);
         assert_eq!(result1.props["meta"], "data");
 
-        assert_eq!(result1.rows.len(), 2);
-        assert_eq!(result1.rows[0].len(), 4);
-        assert_matches!(result1.rows[0][0], KleLegendsOrProps::Props(_));
-        assert_matches!(result1.rows[0][1], KleLegendsOrProps::Legend(_));
+        assert_eq!(result1.layout.len(), 2);
+        assert_eq!(result1.layout[0].len(), 4);
+        assert_matches!(result1.layout[0][0], KleLegendsOrProps::Props(_));
+        assert_matches!(result1.layout[0][1], KleLegendsOrProps::Legend(_));
 
         let result2: KleKeyboard = serde_json::from_str(r#"[["A"]]"#).unwrap();
         assert_eq!(result2.props.len(), 0);
-        assert_eq!(result2.rows.len(), 1);
+        assert_eq!(result2.layout.len(), 1);
 
         let result3: KleKeyboard = serde_json::from_str(r#"[{"k": "v"}]"#).unwrap();
         assert_eq!(result3.props.len(), 1);
-        assert_eq!(result3.rows.len(), 0);
+        assert_eq!(result3.layout.len(), 0);
 
         let result4: KleKeyboard = serde_json::from_str(r#"[]"#).unwrap();
         assert_eq!(result4.props.len(), 0);
-        assert_eq!(result4.rows.len(), 0);
+        assert_eq!(result4.layout.len(), 0);
 
         assert_matches!(serde_json::from_str::<KleKeyboard>("null"), Err(_));
     }

@@ -1,20 +1,20 @@
 mod json;
 
+use std::vec;
+
 use crate::utils::{realign_legends, Alignment};
 use crate::{defaults, NUM_LEGENDS};
 use crate::{Color, Key, Legend, Switch};
+use json::{KleLegendsOrProps, KlePropsObject};
 
 use itertools::izip;
 use smart_default::SmartDefault as Default;
 
-pub(crate) use json::{KleKeyboard, KleLegendsOrProps, KlePropsObject};
+pub(crate) use json::KleKeyboard;
 
 #[derive(Debug, Default)]
 #[allow(clippy::struct_excessive_bools)]
-pub(crate) struct KleProps {
-    // Internal fields
-    is_first: bool, // r, rx, & ry can only be set in the first properties object of a line
-
+struct KleProps {
     // Per-key properties
     x: f64,
     y: f64,
@@ -56,7 +56,7 @@ pub(crate) struct KleProps {
 }
 
 impl KleProps {
-    pub(crate) fn update(&mut self, props: KlePropsObject) {
+    fn update(&mut self, props: KlePropsObject) {
         let f = props.f.unwrap_or(self.f);
         let fa = if let Some(fa) = props.fa {
             std::array::from_fn(|i| match fa.get(i).copied() {
@@ -89,8 +89,6 @@ impl KleProps {
             (self.x, self.y, self.rx, self.ry)
         };
 
-        // Internal fields
-        self.is_first = false;
         // Per-key properties
         self.x = x + props.x.unwrap_or(0.0);
         self.y = y + props.y.unwrap_or(0.0);
@@ -121,7 +119,7 @@ impl KleProps {
     }
 
     #[inline]
-    pub(crate) fn next_key(&mut self) {
+    fn next_key(&mut self) {
         // Increment x
         self.x += self.w.max(self.x2 + self.w2);
         // Reset per-key properties
@@ -137,14 +135,13 @@ impl KleProps {
     }
 
     #[inline]
-    pub(crate) fn next_line(&mut self) {
+    fn next_line(&mut self) {
         self.next_key();
-        self.is_first = true;
         self.x = self.rx; // x resets to rx
         self.y += 1.;
     }
 
-    pub(crate) fn build_key(&self, legends: &str) -> Key {
+    fn build_key(&self, legends: &str) -> Key {
         let legends = izip!(legends.lines(), self.fa, self.ta).map(|(text, size, color)| {
             (!text.is_empty()).then_some(Legend {
                 text: text.into(),
@@ -179,5 +176,48 @@ impl KleProps {
             homing: self.n,
             decal: self.d,
         }
+    }
+}
+
+pub(crate) struct KleLayoutIterator {
+    state: KleProps,
+    row_iter: vec::IntoIter<Vec<KleLegendsOrProps>>,
+    key_iter: vec::IntoIter<KleLegendsOrProps>,
+}
+
+impl KleLayoutIterator {
+    pub(crate) fn new(kle: Vec<Vec<KleLegendsOrProps>>) -> Self {
+        let state = KleProps::default();
+        let mut row_iter = kle.into_iter();
+        let key_iter = row_iter.next().unwrap_or(Vec::new()).into_iter();
+        KleLayoutIterator {
+            state,
+            row_iter,
+            key_iter,
+        }
+    }
+}
+
+impl Iterator for KleLayoutIterator {
+    type Item = Key;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let legends = loop {
+            let key = self.key_iter.next().or_else(|| {
+                self.key_iter = self.row_iter.next()?.into_iter();
+                self.state.next_line();
+                self.key_iter.next()
+            })?;
+
+            match key {
+                KleLegendsOrProps::Props(props) => self.state.update(*props),
+                KleLegendsOrProps::Legend(str) => break str,
+            }
+        };
+
+        let key = self.state.build_key(&legends);
+        self.state.next_key();
+
+        Some(key)
     }
 }

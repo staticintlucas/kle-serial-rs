@@ -8,7 +8,7 @@ mod utils;
 use serde::Deserialize;
 use smart_default::SmartDefault as Default;
 
-use de::{KleKeyboard, KleLegendsOrProps, KleProps};
+use de::{KleKeyboard, KleLayoutIterator};
 
 pub type Color = rgb::RGBA8;
 
@@ -103,27 +103,9 @@ impl<'de> Deserialize<'de> for Keyboard {
     {
         let kle = KleKeyboard::deserialize(deserializer)?;
 
-        let mut state = KleProps::default();
-        let mut keys = Vec::with_capacity(kle.rows.iter().flatten().count());
-
-        for row in kle.rows {
-            for key_or_props in row {
-                match key_or_props {
-                    KleLegendsOrProps::Props(props) => {
-                        state.update(*props);
-                    }
-                    KleLegendsOrProps::Legend(text) => {
-                        keys.push(state.build_key(&text));
-                        state.next_key();
-                    }
-                }
-            }
-            state.next_line();
-        }
-
         Ok(Self {
             metadata: Metadata::default(), // TODO: parse metadata
-            keys,
+            keys: KleLayoutIterator::new(kle.layout).collect(),
         })
     }
 }
