@@ -3,32 +3,25 @@ mod json;
 use std::vec;
 
 use crate::{
-    defaults,
+    color,
     utils::{realign_legends, Alignment, FontSize},
     Color, Key, Legend, Switch, NUM_LEGENDS,
 };
 use json::{KleLegendsOrProps, KlePropsObject};
 
-use itertools::izip;
-use smart_default::SmartDefault as Default;
-
 pub(crate) use json::KleKeyboard;
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 #[allow(clippy::struct_excessive_bools)]
 struct KleProps {
     // Per-key properties
     x: f64,
     y: f64,
-    #[default = 1.]
     w: f64,
-    #[default = 1.]
     h: f64,
     x2: f64,
     y2: f64,
-    #[default = 1.]
     w2: f64,
-    #[default = 1.]
     h2: f64,
     l: bool, // stepped
     n: bool, // homing
@@ -38,19 +31,16 @@ struct KleProps {
     r: f64,
     rx: f64,
     ry: f64,
-    g: bool,    // ghosted
-    sm: String, // switch mount
-    sb: String, // switch brand
-    st: String, // switch type
-    #[default(defaults::KEY_COLOR)]
-    c: Color, // color
-    #[default(defaults::LEGEND_COLOR)]
-    t: Color, // fallback legend color
-    #[default([defaults::LEGEND_COLOR; NUM_LEGENDS])]
-    ta: [Color; NUM_LEGENDS], // legend color array
-    a: Alignment, // alignment
-    p: String,  // profile
-    f: FontSize, // fallback font size
+    g: bool,                     // ghosted
+    sm: String,                  // switch mount
+    sb: String,                  // switch brand
+    st: String,                  // switch type
+    c: Color,                    // color
+    t: Color,                    // fallback legend color
+    ta: [Color; NUM_LEGENDS],    // legend color array
+    a: Alignment,                // alignment
+    p: String,                   // profile
+    f: FontSize,                 // fallback font size
     fa: [FontSize; NUM_LEGENDS], // font size array
 }
 
@@ -141,13 +131,17 @@ impl KleProps {
     }
 
     fn build_key(&self, legends: &str) -> Key {
-        let legends = izip!(legends.lines(), self.fa, self.ta).map(|(text, size, color)| {
-            (!text.is_empty()).then_some(Legend {
-                text: text.into(),
-                size: usize::from(size),
-                color,
-            })
-        });
+        let legends =
+            legends
+                .lines()
+                .zip(self.fa.into_iter().zip(self.ta))
+                .map(|(text, (size, color))| {
+                    (!text.is_empty()).then_some(Legend {
+                        text: text.into(),
+                        size: usize::from(size),
+                        color,
+                    })
+                });
         let legends = realign_legends(legends, self.a);
 
         Key {
@@ -174,6 +168,38 @@ impl KleProps {
             stepped: self.l,
             homing: self.n,
             decal: self.d,
+        }
+    }
+}
+
+impl Default for KleProps {
+    fn default() -> Self {
+        Self {
+            x: 0.,
+            y: 0.,
+            w: 1.,
+            h: 1.,
+            x2: 0.,
+            y2: 0.,
+            w2: 1.,
+            h2: 1.,
+            l: false,
+            n: false,
+            d: false,
+            r: 0.,
+            rx: 0.,
+            ry: 0.,
+            g: false,
+            sm: String::new(),
+            sb: String::new(),
+            st: String::new(),
+            c: color::KEY,
+            t: color::LEGEND,
+            ta: [color::LEGEND; NUM_LEGENDS],
+            a: Alignment::default(),
+            p: String::new(),
+            f: FontSize::default(),
+            fa: [FontSize::default(); NUM_LEGENDS],
         }
     }
 }

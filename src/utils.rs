@@ -1,6 +1,5 @@
 use std::fmt::Debug;
 
-use itertools::Itertools;
 use serde::{
     de::{Error, Unexpected},
     Deserialize,
@@ -85,12 +84,10 @@ where
     // Guaranteed to be in range because of newtype
     let mapping = LEGEND_MAPPING[usize::from(alignment)];
 
-    let mut values = mapping
-        .iter()
-        .zip(values)
-        .sorted_by_key(|el| el.0)
-        .map(|el| el.1);
+    let mut sorted = mapping.iter().zip(values).collect::<Vec<_>>();
+    sorted.sort_by_key(|el| el.0);
 
+    let mut values = sorted.into_iter().map(|el| el.1);
     std::array::from_fn(|_| values.next().unwrap_or(None))
 }
 

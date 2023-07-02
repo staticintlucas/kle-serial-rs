@@ -6,29 +6,37 @@ mod de;
 mod utils;
 
 use serde::Deserialize;
-use smart_default::SmartDefault as Default;
 
 use de::{KleKeyboard, KleLayoutIterator};
+use utils::FontSize;
 
 pub type Color = rgb::RGBA8;
 
 const NUM_LEGENDS: usize = 12; // Number of legends on a key
 
-pub(crate) mod defaults {
+pub(crate) mod color {
     use crate::Color;
 
-    pub(crate) const BACKGROUND_COLOR: Color = Color::new(0xEE, 0xEE, 0xEE, 0xFF); // #EEEEEE
-    pub(crate) const KEY_COLOR: Color = Color::new(0xCC, 0xCC, 0xCC, 0xFF); // #CCCCCC
-    pub(crate) const LEGEND_COLOR: Color = Color::new(0x00, 0x00, 0x00, 0xFF); // #000000
+    pub(crate) const BACKGROUND: Color = Color::new(0xEE, 0xEE, 0xEE, 0xFF); // #EEEEEE
+    pub(crate) const KEY: Color = Color::new(0xCC, 0xCC, 0xCC, 0xFF); // #CCCCCC
+    pub(crate) const LEGEND: Color = Color::new(0x00, 0x00, 0x00, 0xFF); // #000000
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct Legend {
     pub text: String,
-    #[default = 4]
     pub size: usize,
-    #[default(defaults::LEGEND_COLOR)]
     pub color: Color,
+}
+
+impl Default for Legend {
+    fn default() -> Self {
+        Self {
+            text: String::default(),
+            size: usize::from(FontSize::default()),
+            color: color::LEGEND,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Default)]
@@ -38,23 +46,18 @@ pub struct Switch {
     pub typ: String,
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 #[allow(clippy::struct_excessive_bools)]
 pub struct Key {
     pub legends: [Option<Legend>; NUM_LEGENDS],
-    #[default(defaults::KEY_COLOR)]
     pub color: Color,
     pub x: f64,
     pub y: f64,
-    #[default = 1.]
     pub w: f64,
-    #[default = 1.]
     pub h: f64,
     pub x2: f64,
     pub y2: f64,
-    #[default = 1.]
     pub w2: f64,
-    #[default = 1.]
     pub h2: f64,
     pub rotation: f64,
     pub rx: f64,
@@ -67,15 +70,40 @@ pub struct Key {
     pub decal: bool,
 }
 
+impl Default for Key {
+    fn default() -> Self {
+        Self {
+            legends: std::array::from_fn(|_| None),
+            color: color::KEY,
+            x: 0.,
+            y: 0.,
+            w: 1.,
+            h: 1.,
+            x2: 0.,
+            y2: 0.,
+            w2: 1.,
+            h2: 1.,
+            rotation: 0.,
+            rx: 0.,
+            ry: 0.,
+            profile: String::new(),
+            switch: Switch::default(),
+            ghosted: false,
+            stepped: false,
+            homing: false,
+            decal: false,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Default)]
 pub struct Background {
     pub name: String,
     pub style: String,
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct Metadata {
-    #[default(defaults::BACKGROUND_COLOR)]
     pub background_color: Color,
     pub background: Background,
     pub radii: String,
@@ -85,6 +113,22 @@ pub struct Metadata {
     pub plate_mount: bool,
     pub pcb_mount: bool,
     pub notes: String,
+}
+
+impl Default for Metadata {
+    fn default() -> Self {
+        Self {
+            background_color: color::BACKGROUND,
+            background: Background::default(),
+            radii: String::new(),
+            name: String::new(),
+            author: String::new(),
+            switch: Switch::default(),
+            plate_mount: false,
+            pcb_mount: false,
+            notes: String::new(),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Default)]
