@@ -2,9 +2,11 @@ mod json;
 
 use std::vec;
 
-use crate::utils::{realign_legends, Alignment};
-use crate::{defaults, NUM_LEGENDS};
-use crate::{Color, Key, Legend, Switch};
+use crate::{
+    defaults,
+    utils::{realign_legends, Alignment},
+    Color, Key, Legend, Switch, NUM_LEGENDS,
+};
 use json::{KleLegendsOrProps, KlePropsObject};
 
 use itertools::izip;

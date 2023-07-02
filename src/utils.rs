@@ -1,11 +1,12 @@
 use std::fmt::Debug;
 
 use itertools::Itertools;
-use serde::de::{Error, Unexpected};
-use serde::Deserialize;
+use serde::{
+    de::{Error, Unexpected},
+    Deserialize,
+};
 
-use crate::Legend;
-use crate::NUM_LEGENDS;
+use crate::{Legend, NUM_LEGENDS};
 
 // This map is the same as that of kle-serial. Note the blanks are also filled
 // in, so we're slightly more permissive with not-strictly-valid KLE input.

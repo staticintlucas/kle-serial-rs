@@ -1,12 +1,13 @@
 use std::fmt;
 
 use csscolorparser::Color as CssColor;
-use serde::de::{value::SeqAccessDeserializer, Error, SeqAccess, Unexpected, Visitor};
-use serde::{Deserialize, Deserializer};
+use serde::{
+    de::{value::SeqAccessDeserializer, Error, SeqAccess, Unexpected, Visitor},
+    Deserialize, Deserializer,
+};
 use serde_json as json;
 
-use crate::utils::Alignment;
-use crate::Color;
+use crate::{utils::Alignment, Color};
 
 fn color_from_str<'de, D>(value: &str) -> Result<Color, D::Error>
 where
