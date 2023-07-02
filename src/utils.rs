@@ -8,6 +8,63 @@ use serde::{
 
 use crate::{Legend, NUM_LEGENDS};
 
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct BoundsError;
+
+#[derive(Clone, Copy)]
+pub(crate) struct BoundedUsize<const MAX: usize, const DEF: usize>(usize);
+
+impl<const MAX: usize, const DEF: usize> BoundedUsize<MAX, DEF> {
+    pub fn new(value: usize) -> Result<Self, BoundsError> {
+        if value <= MAX {
+            Ok(Self(value))
+        } else {
+            Err(BoundsError)
+        }
+    }
+}
+
+impl<const MAX: usize, const DEF: usize> Debug for BoundedUsize<MAX, DEF> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+impl<const MAX: usize, const DEF: usize> From<BoundedUsize<MAX, DEF>> for usize {
+    fn from(value: BoundedUsize<MAX, DEF>) -> Self {
+        value.0
+    }
+}
+
+impl<const MAX: usize, const DEF: usize> Default for BoundedUsize<MAX, DEF> {
+    fn default() -> Self {
+        Self(DEF)
+    }
+}
+
+impl<'de, const MAX: usize, const DEF: usize> Deserialize<'de> for BoundedUsize<MAX, DEF> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let font_size = usize::deserialize(deserializer)?;
+
+        Self::new(font_size).map_err(|_| {
+            D::Error::invalid_value(
+                Unexpected::Unsigned(font_size as u64),
+                &format!("0 <= x <= {MAX}").as_str(),
+            )
+        })
+    }
+}
+
+// KLE uses default font size of 3 and max of 9
+pub(crate) type FontSize = BoundedUsize<9, 3>;
+
+// KLE uses default alignment of 4
+const MAX_ALIGNMENT: usize = LEGEND_MAPPING.len() - 1;
+pub(crate) type Alignment = BoundedUsize<MAX_ALIGNMENT, 3>;
+
 // This map is the same as that of kle-serial. Note the blanks are also filled
 // in, so we're slightly more permissive with not-strictly-valid KLE input.
 const LEGEND_MAPPING: [[usize; NUM_LEGENDS]; 8] = [
@@ -20,59 +77,6 @@ const LEGEND_MAPPING: [[usize; NUM_LEGENDS]; 8] = [
     [3, 0, 5, 1, 10, 2, 6, 7, 4, 8, 9, 11], // 6 = center front & y
     [4, 0, 1, 2, 10, 3, 5, 6, 7, 8, 9, 11], // 7 = center front & x & y
 ];
-
-#[derive(Clone, Copy)]
-pub(crate) struct Alignment(usize);
-
-impl Alignment {
-    pub(crate) const MAX: Self = Self(LEGEND_MAPPING.len() - 1);
-
-    pub(crate) const fn new(alignment: usize) -> Option<Self> {
-        if alignment <= Self::MAX.0 {
-            Some(Self(alignment))
-        } else {
-            None
-        }
-    }
-
-    pub(crate) const fn default() -> Self {
-        Self(4) // 4 is the default used by KLE
-    }
-}
-
-impl Debug for Alignment {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.0.fmt(f)
-    }
-}
-
-impl From<Alignment> for usize {
-    fn from(value: Alignment) -> Self {
-        value.0
-    }
-}
-
-impl<'de> Deserialize<'de> for Alignment {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        let alignment = usize::deserialize(deserializer)?;
-
-        Self::new(alignment).ok_or_else(|| {
-            D::Error::invalid_value(
-                Unexpected::Unsigned(alignment as u64),
-                &format!("0 <= x <= {}", Self::MAX.0).as_str(),
-            )
-        })
-    }
-}
-
-impl Default for Alignment {
-    fn default() -> Self {
-        Self::default()
-    }
-}
 
 pub(crate) fn realign_legends<T>(values: T, alignment: Alignment) -> [Option<Legend>; NUM_LEGENDS]
 where

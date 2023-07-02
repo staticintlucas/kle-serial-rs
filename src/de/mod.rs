@@ -4,7 +4,7 @@ use std::vec;
 
 use crate::{
     defaults,
-    utils::{realign_legends, Alignment},
+    utils::{realign_legends, Alignment, FontSize},
     Color, Key, Legend, Switch, NUM_LEGENDS,
 };
 use json::{KleLegendsOrProps, KlePropsObject};
@@ -48,13 +48,10 @@ struct KleProps {
     t: Color, // fallback legend color
     #[default([defaults::LEGEND_COLOR; NUM_LEGENDS])]
     ta: [Color; NUM_LEGENDS], // legend color array
-    #[default(defaults::ALIGNMENT)]
     a: Alignment, // alignment
     p: String,  // profile
-    #[default(defaults::FONT_SIZE)]
-    f: usize, // fallback font size
-    #[default([defaults::FONT_SIZE; NUM_LEGENDS])]
-    fa: [usize; NUM_LEGENDS], // font size array
+    f: FontSize, // fallback font size
+    fa: [FontSize; NUM_LEGENDS], // font size array
 }
 
 impl KleProps {
@@ -62,7 +59,7 @@ impl KleProps {
         let f = props.f.unwrap_or(self.f);
         let fa = if let Some(fa) = props.fa {
             std::array::from_fn(|i| match fa.get(i).copied() {
-                Some(fa) if fa > 0 => fa,
+                Some(fa) if usize::from(fa) > 0 => fa,
                 _ => f,
             })
         } else if let Some(f2) = props.f2 {
@@ -147,7 +144,7 @@ impl KleProps {
         let legends = izip!(legends.lines(), self.fa, self.ta).map(|(text, size, color)| {
             (!text.is_empty()).then_some(Legend {
                 text: text.into(),
-                size,
+                size: usize::from(size),
                 color,
             })
         });

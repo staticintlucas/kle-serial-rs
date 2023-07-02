@@ -15,10 +15,7 @@ pub type Color = rgb::RGBA8;
 const NUM_LEGENDS: usize = 12; // Number of legends on a key
 
 pub(crate) mod defaults {
-    use crate::{utils::Alignment, Color};
-
-    pub(crate) const FONT_SIZE: usize = 3; // The default font size
-    pub(crate) const ALIGNMENT: Alignment = Alignment::default(); // The default alignment
+    use crate::Color;
 
     pub(crate) const BACKGROUND_COLOR: Color = Color::new(0xEE, 0xEE, 0xEE, 0xFF); // #EEEEEE
     pub(crate) const KEY_COLOR: Color = Color::new(0xCC, 0xCC, 0xCC, 0xFF); // #CCCCCC

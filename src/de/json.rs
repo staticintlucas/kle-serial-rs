@@ -7,7 +7,10 @@ use serde::{
 };
 use serde_json as json;
 
-use crate::{utils::Alignment, Color};
+use crate::{
+    utils::{Alignment, FontSize},
+    Color,
+};
 
 fn color_from_str<'de, D>(value: &str) -> Result<Color, D::Error>
 where
@@ -71,9 +74,9 @@ pub(crate) struct KlePropsObject {
     pub t: Option<Vec<Option<Color>>>,
     pub a: Option<Alignment>,
     pub p: Option<String>,
-    pub f: Option<usize>,
-    pub f2: Option<usize>,
-    pub fa: Option<Vec<usize>>,
+    pub f: Option<FontSize>,
+    pub f2: Option<FontSize>,
+    pub fa: Option<Vec<FontSize>>,
 }
 
 // Represents either a key or a JSON object containing properties for the next key(s)
