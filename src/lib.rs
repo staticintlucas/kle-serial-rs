@@ -142,11 +142,11 @@ impl<'de> Deserialize<'de> for Keyboard {
     where
         D: serde::Deserializer<'de>,
     {
-        let kle = KleKeyboard::deserialize(deserializer)?;
+        let KleKeyboard { meta, layout } = KleKeyboard::deserialize(deserializer)?;
 
         Ok(Self {
-            metadata: Metadata::default(), // TODO: parse metadata
-            keys: KleLayoutIterator::new(kle.layout).collect(),
+            metadata: meta.into(),
+            keys: KleLayoutIterator::new(layout).collect(),
         })
     }
 }

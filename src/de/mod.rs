@@ -5,11 +5,45 @@ use std::vec;
 use crate::{
     color,
     utils::{realign_legends, Alignment, FontSize},
-    Color, Key, Legend, Switch, NUM_LEGENDS,
+    Background, Color, Key, Legend, Metadata, Switch, NUM_LEGENDS,
 };
-use json::{KleLegendsOrProps, KlePropsObject};
+use json::{KleBackground, KleLegendsOrProps, KleMetadata, KlePropsObject};
 
 pub(crate) use json::KleKeyboard;
+
+impl From<KleBackground> for Background {
+    fn from(value: KleBackground) -> Self {
+        let default = Self::default();
+        Self {
+            name: value.name.unwrap_or(default.name),
+            style: value.style.unwrap_or(default.style),
+        }
+    }
+}
+
+impl From<KleMetadata> for Metadata {
+    fn from(value: KleMetadata) -> Self {
+        let default = Self::default();
+
+        Self {
+            background_color: value.backcolor.unwrap_or(default.background_color),
+            background: value
+                .background
+                .map_or(default.background, Background::from),
+            radii: value.radii.unwrap_or(default.radii),
+            name: value.name.unwrap_or(default.name),
+            author: value.author.unwrap_or(default.author),
+            switch: Switch {
+                mount: value.switch_mount.unwrap_or(default.switch.mount),
+                brand: value.switch_brand.unwrap_or(default.switch.brand),
+                typ: value.switch_type.unwrap_or(default.switch.typ),
+            },
+            plate_mount: value.plate.unwrap_or(default.plate_mount),
+            pcb_mount: value.pcb.unwrap_or(default.pcb_mount),
+            notes: value.notes.unwrap_or(default.notes),
+        }
+    }
+}
 
 #[derive(Debug)]
 #[allow(clippy::struct_excessive_bools)]

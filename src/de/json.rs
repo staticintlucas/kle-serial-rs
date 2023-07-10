@@ -5,7 +5,6 @@ use serde::{
     de::{value::SeqAccessDeserializer, Error, SeqAccess, Unexpected, Visitor},
     Deserialize, Deserializer,
 };
-use serde_json as json;
 
 use crate::{
     utils::{Alignment, FontSize},
@@ -45,6 +44,30 @@ where
                 .collect()
         })
         .transpose()
+}
+
+#[derive(Deserialize, Default, Debug, Clone)]
+pub(crate) struct KleBackground {
+    pub name: Option<String>,
+    pub style: Option<String>,
+}
+
+#[derive(Deserialize, Default, Debug, Clone)]
+#[serde(default, rename_all = "camelCase")]
+pub(crate) struct KleMetadata {
+    pub author: Option<String>,
+    #[serde(deserialize_with = "de_color")]
+    pub backcolor: Option<Color>,
+    pub background: Option<KleBackground>,
+    pub name: Option<String>,
+    pub notes: Option<String>,
+    pub radii: Option<String>,
+    pub switch_mount: Option<String>,
+    pub switch_brand: Option<String>,
+    pub switch_type: Option<String>,
+    pub css: Option<String>,
+    pub pcb: Option<bool>,
+    pub plate: Option<bool>,
 }
 
 #[derive(Deserialize, Default, Debug, Clone)]
@@ -89,8 +112,7 @@ pub(crate) enum KleLegendsOrProps {
 
 #[derive(Debug, Clone)]
 pub(crate) struct KleKeyboard {
-    #[allow(dead_code)] // TODO
-    pub props: json::Map<String, json::Value>, // TODO global layout properties are unused at the moment
+    pub meta: KleMetadata,
     pub layout: Vec<Vec<KleLegendsOrProps>>,
 }
 
@@ -115,26 +137,29 @@ impl<'de> Deserialize<'de> for KleKeyboard {
                 #[derive(Deserialize)]
                 #[serde(untagged)]
                 enum MapOrSeq {
-                    Props(json::Map<String, json::Value>),
-                    Row(Vec<KleLegendsOrProps>),
+                    Map(Box<KleMetadata>),
+                    Seq(Vec<KleLegendsOrProps>),
                 }
 
                 let result = match seq.next_element()? {
                     None => {
-                        let props = json::Map::new();
+                        let meta = KleMetadata::default();
                         let layout = Vec::new();
-                        Self::Value { props, layout }
+                        Self::Value { meta, layout }
                     }
-                    Some(MapOrSeq::Props(props)) => {
+                    Some(MapOrSeq::Map(boxed)) => {
                         let layout = Vec::deserialize(SeqAccessDeserializer::new(seq))?;
-                        Self::Value { props, layout }
+                        Self::Value {
+                            meta: *boxed,
+                            layout,
+                        }
                     }
-                    Some(MapOrSeq::Row(row)) => {
-                        let props = json::Map::new();
+                    Some(MapOrSeq::Seq(row)) => {
+                        let meta = KleMetadata::default();
                         let mut layout = Vec::with_capacity(seq.size_hint().unwrap_or(0).min(4096));
                         layout.push(row);
                         layout.extend(Vec::deserialize(SeqAccessDeserializer::new(seq))?);
-                        Self::Value { props, layout }
+                        Self::Value { meta, layout }
                     }
                 };
 
@@ -170,12 +195,13 @@ mod tests {
         let result1: KleKeyboard = serde_json::from_str(
             r#"[
                 {
-                    "meta": "data"
+                    "name": "test",
+                    "unknown": "key"
                 },
                 [
                     {
                         "a": 4,
-                        "unknown": "key"
+                        "unknown2": "key"
                     },
                     "A",
                     "B",
@@ -188,24 +214,22 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!(result1.props.len(), 1);
-        assert_eq!(result1.props["meta"], "data");
-
+        assert_matches!(result1.meta.name, Some(name) if name == "test");
         assert_eq!(result1.layout.len(), 2);
         assert_eq!(result1.layout[0].len(), 4);
         assert_matches!(result1.layout[0][0], KleLegendsOrProps::Props(_));
         assert_matches!(result1.layout[0][1], KleLegendsOrProps::Legend(_));
 
         let result2: KleKeyboard = serde_json::from_str(r#"[["A"]]"#).unwrap();
-        assert_eq!(result2.props.len(), 0);
+        assert!(result2.meta.name.is_none());
         assert_eq!(result2.layout.len(), 1);
 
-        let result3: KleKeyboard = serde_json::from_str(r#"[{"k": "v"}]"#).unwrap();
-        assert_eq!(result3.props.len(), 1);
+        let result3: KleKeyboard = serde_json::from_str(r#"[{"notes": "'tis a test"}]"#).unwrap();
+        assert_matches!(result3.meta.notes, Some(notes) if notes == "'tis a test");
         assert_eq!(result3.layout.len(), 0);
 
         let result4: KleKeyboard = serde_json::from_str(r#"[]"#).unwrap();
-        assert_eq!(result4.props.len(), 0);
+        assert!(result4.meta.name.is_none());
         assert_eq!(result4.layout.len(), 0);
 
         assert_matches!(serde_json::from_str::<KleKeyboard>("null"), Err(_));
