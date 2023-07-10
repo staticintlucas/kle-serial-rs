@@ -2,7 +2,7 @@ use std::fmt;
 
 use csscolorparser::Color as CssColor;
 use serde::{
-    de::{value::SeqAccessDeserializer, Error, SeqAccess, Unexpected, Visitor},
+    de::{Error, SeqAccess, Unexpected, Visitor},
     Deserialize, Deserializer,
 };
 
@@ -141,29 +141,23 @@ impl<'de> Deserialize<'de> for KleKeyboard {
                     Seq(Vec<KleLegendsOrProps>),
                 }
 
-                let result = match seq.next_element()? {
-                    None => {
-                        let meta = KleMetadata::default();
-                        let layout = Vec::new();
-                        Self::Value { meta, layout }
-                    }
-                    Some(MapOrSeq::Map(boxed)) => {
-                        let layout = Vec::deserialize(SeqAccessDeserializer::new(seq))?;
-                        Self::Value {
-                            meta: *boxed,
-                            layout,
-                        }
-                    }
+                // Set a max initial size of 2**12, this is also what serde does internally
+                let mut layout = Vec::with_capacity(seq.size_hint().unwrap_or(0).min(4096));
+
+                let meta = match seq.next_element()? {
+                    Some(MapOrSeq::Map(meta)) => *meta,
                     Some(MapOrSeq::Seq(row)) => {
-                        let meta = KleMetadata::default();
-                        let mut layout = Vec::with_capacity(seq.size_hint().unwrap_or(0).min(4096));
                         layout.push(row);
-                        layout.extend(Vec::deserialize(SeqAccessDeserializer::new(seq))?);
-                        Self::Value { meta, layout }
+                        KleMetadata::default()
                     }
+                    None => KleMetadata::default(),
                 };
 
-                Ok(result)
+                while let Some(row) = seq.next_element()? {
+                    layout.push(row);
+                }
+
+                Ok(Self::Value { meta, layout })
             }
         }
 
