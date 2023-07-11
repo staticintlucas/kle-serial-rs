@@ -62,7 +62,7 @@ pub(crate) type FontSize = BoundedUsize<9, 3>;
 
 // KLE uses default alignment of 4
 const MAX_ALIGNMENT: usize = LEGEND_MAPPING.len() - 1;
-pub(crate) type Alignment = BoundedUsize<MAX_ALIGNMENT, 3>;
+pub(crate) type Alignment = BoundedUsize<MAX_ALIGNMENT, 4>;
 
 // This map is the same as that of kle-serial. Note the blanks are also filled
 // in, so we're slightly more permissive with not-strictly-valid KLE input.
