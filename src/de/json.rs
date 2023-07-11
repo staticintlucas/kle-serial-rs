@@ -168,9 +168,34 @@ impl<'de> Deserialize<'de> for KleKeyboard {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use assert_matches::assert_matches;
 
+    use assert_matches::assert_matches;
     use serde_json::{Deserializer, Error};
+
+    #[test]
+    fn test_de_color() {
+        let colors = [
+            ("rebeccapurple", Color::new(102, 51, 153, 255)),
+            ("aliceblue", Color::new(240, 248, 255, 255)),
+            ("#f09", Color::new(255, 0, 153, 255)),
+            ("#ff0099", Color::new(255, 0, 153, 255)),
+            ("f09", Color::new(255, 0, 153, 255)),
+            ("ff0099", Color::new(255, 0, 153, 255)),
+            ("rgb(255 0 153)", Color::new(255, 0, 153, 255)),
+            ("rgb(255 0 153 / 80%)", Color::new(255, 0, 153, 204)),
+            ("hsl(150 30% 60%)", Color::new(122, 184, 153, 255)),
+            ("hsl(150 30% 60% / 0.8)", Color::new(122, 184, 153, 204)),
+            ("hwb(12 50% 0%)", Color::new(255, 153, 128, 255)),
+            ("hwb(194 0% 0% / 0.5)", Color::new(0, 195, 255, 128)),
+        ];
+
+        for (css, res) in colors {
+            let color = de_color(&mut Deserializer::from_str(&format!(r#""{css}""#)))
+                .unwrap()
+                .unwrap();
+            assert_eq!(color, res);
+        }
+    }
 
     #[test]
     fn test_de_nl_delimited_colors() {
@@ -185,7 +210,7 @@ mod tests {
     }
 
     #[test]
-    fn test_deserialize_kle_file() {
+    fn test_deserialize_kle_keyboard() {
         let result1: KleKeyboard = serde_json::from_str(
             r#"[
                 {

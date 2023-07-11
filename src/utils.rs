@@ -10,7 +10,7 @@ use crate::{Legend, NUM_LEGENDS};
 #[derive(Debug, Clone, Copy)]
 pub(crate) struct BoundsError;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub(crate) struct BoundedUsize<const MAX: usize, const DEF: usize>(usize);
 
 impl<const MAX: usize, const DEF: usize> BoundedUsize<MAX, DEF> {

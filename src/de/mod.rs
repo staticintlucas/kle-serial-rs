@@ -280,3 +280,356 @@ impl Iterator for KleLayoutIterator {
         Some(key)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_background_from() {
+        let bg = Background::from(KleBackground::default());
+
+        assert_eq!(bg.name, Background::default().name);
+        assert_eq!(bg.style, Background::default().style);
+
+        let bg = Background::from(KleBackground {
+            name: Some("name".into()),
+            style: Some("style".into()),
+        });
+
+        assert_eq!(bg.name, "name");
+        assert_eq!(bg.style, "style");
+    }
+
+    #[test]
+    fn test_metadata_from() {
+        let md = Metadata::from(KleMetadata::default());
+
+        assert_eq!(md.background_color, Metadata::default().background_color);
+        assert_eq!(md.background.name, Metadata::default().background.name);
+        assert_eq!(md.background.style, Metadata::default().background.style);
+        assert_eq!(md.radii, Metadata::default().radii);
+        assert_eq!(md.name, Metadata::default().name);
+        assert_eq!(md.author, Metadata::default().author);
+        assert_eq!(md.switch.mount, Metadata::default().switch.mount);
+        assert_eq!(md.switch.brand, Metadata::default().switch.brand);
+        assert_eq!(md.switch.typ, Metadata::default().switch.typ);
+        assert_eq!(md.plate_mount, Metadata::default().plate_mount);
+        assert_eq!(md.pcb_mount, Metadata::default().pcb_mount);
+        assert_eq!(md.notes, Metadata::default().notes);
+
+        let md: Metadata = Metadata::from(KleMetadata {
+            author: Some("author".into()),
+            backcolor: Some(Color::new(204, 34, 34, 255)),
+            background: Some(KleBackground {
+                name: Some("name".into()),
+                style: Some("style".into()),
+            }),
+            name: Some("name".into()),
+            notes: Some("notes".into()),
+            radii: Some("radii".into()),
+            switch_mount: Some("switch_mount".into()),
+            switch_brand: Some("switch_brand".into()),
+            switch_type: Some("switch_type".into()),
+            css: Some("css".into()),
+            pcb: Some(true),
+            plate: Some(true),
+        });
+
+        assert_eq!(md.background_color, Color::new(204, 34, 34, 255));
+        assert_eq!(md.background.name, "name");
+        assert_eq!(md.background.style, "style");
+        assert_eq!(md.radii, "radii");
+        assert_eq!(md.name, "name");
+        assert_eq!(md.author, "author");
+        assert_eq!(md.switch.mount, "switch_mount");
+        assert_eq!(md.switch.brand, "switch_brand");
+        assert_eq!(md.switch.typ, "switch_type");
+        assert!(md.plate_mount);
+        assert!(md.pcb_mount);
+        assert_eq!(md.notes, "notes");
+    }
+
+    #[test]
+    fn test_kle_props_update() {
+        let props_obj = KlePropsObject {
+            x: None,
+            y: None,
+            w: None,
+            h: None,
+            x2: None,
+            y2: None,
+            w2: None,
+            h2: None,
+            l: None,
+            n: None,
+            d: None,
+            r: None,
+            rx: None,
+            ry: None,
+            g: None,
+            sm: None,
+            sb: None,
+            st: None,
+            c: None,
+            t: None,
+            a: None,
+            p: None,
+            f: None,
+            f2: None,
+            fa: None,
+        };
+        let mut props = KleProps::default();
+        props.update(props_obj);
+
+        assert_eq!(props.x, 0.);
+        assert_eq!(props.y, 0.);
+        assert_eq!(props.w, 1.);
+        assert_eq!(props.h, 1.);
+        assert_eq!(props.x2, 0.);
+        assert_eq!(props.y2, 0.);
+        assert_eq!(props.w2, 1.);
+        assert_eq!(props.h2, 1.);
+        assert_eq!(props.l, false);
+        assert_eq!(props.n, false);
+        assert_eq!(props.d, false);
+        assert_eq!(props.r, 0.);
+        assert_eq!(props.rx, 0.);
+        assert_eq!(props.ry, 0.);
+        assert_eq!(props.g, false);
+        assert_eq!(props.sm, "");
+        assert_eq!(props.sb, "");
+        assert_eq!(props.st, "");
+        assert_eq!(props.c, color::KEY);
+        assert_eq!(props.t, color::LEGEND);
+        assert_eq!(props.ta, [color::LEGEND; NUM_LEGENDS]);
+        assert_eq!(props.a, Alignment::default());
+        assert_eq!(props.p, "");
+        assert_eq!(props.f, FontSize::default());
+        assert_eq!(props.fa, [FontSize::default(); NUM_LEGENDS]);
+
+        let props_obj = KlePropsObject {
+            x: Some(1.),
+            y: Some(1.),
+            w: Some(2.),
+            h: Some(2.),
+            x2: Some(1.5),
+            y2: Some(1.5),
+            w2: Some(2.5),
+            h2: Some(2.5),
+            l: Some(true),
+            n: Some(true),
+            d: Some(true),
+            r: Some(15.),
+            rx: Some(1.),
+            ry: Some(1.),
+            g: Some(true),
+            sm: Some("cherry".into()),
+            sb: Some("cherry".into()),
+            st: Some("MX1A-31xx".into()),
+            c: Some(Color::new(127, 51, 76, 255)),
+            t: Some(vec![
+                Some(Color::new(25, 25, 25, 255)),
+                None,
+                Some(Color::new(76, 38, 51, 255)),
+            ]),
+            a: Some(Alignment::new(5).unwrap()),
+            p: Some("DSA".into()),
+            f: Some(FontSize::new(4).unwrap()),
+            f2: Some(FontSize::new(4).unwrap()),
+            fa: Some(vec![FontSize::new(4).unwrap(); 3]),
+        };
+        props.update(props_obj);
+
+        assert_eq!(props.x, 2.); // rx adds for whatever reason
+        assert_eq!(props.y, 2.);
+        assert_eq!(props.w, 2.);
+        assert_eq!(props.h, 2.);
+        assert_eq!(props.x2, 1.5);
+        assert_eq!(props.y2, 1.5);
+        assert_eq!(props.w2, 2.5);
+        assert_eq!(props.h2, 2.5);
+        assert_eq!(props.l, true);
+        assert_eq!(props.n, true);
+        assert_eq!(props.d, true);
+        assert_eq!(props.r, 15.);
+        assert_eq!(props.rx, 1.);
+        assert_eq!(props.ry, 1.);
+        assert!(props.g);
+        assert_eq!(props.sm, "cherry");
+        assert_eq!(props.sb, "cherry");
+        assert_eq!(props.st, "MX1A-31xx");
+        assert_eq!(props.c, Color::new(127, 51, 76, 255));
+        assert_eq!(props.t, Color::new(25, 25, 25, 255));
+        assert_eq!(
+            props.ta,
+            [
+                Color::new(25, 25, 25, 255),
+                Color::new(25, 25, 25, 255),
+                Color::new(76, 38, 51, 255),
+                Color::new(25, 25, 25, 255),
+                Color::new(25, 25, 25, 255),
+                Color::new(25, 25, 25, 255),
+                Color::new(25, 25, 25, 255),
+                Color::new(25, 25, 25, 255),
+                Color::new(25, 25, 25, 255),
+                Color::new(25, 25, 25, 255),
+                Color::new(25, 25, 25, 255),
+                Color::new(25, 25, 25, 255),
+            ]
+        );
+        assert_eq!(usize::from(props.a), 5);
+        assert_eq!(props.p, "DSA");
+        assert_eq!(usize::from(props.f), 4);
+        assert_eq!(props.fa.map(usize::from), [4; NUM_LEGENDS]);
+
+        let props_obj = KlePropsObject {
+            f: Some(FontSize::new(2).unwrap()),
+            f2: Some(FontSize::new(4).unwrap()),
+            ..KlePropsObject::default()
+        };
+        props.update(props_obj);
+        assert_eq!(
+            props.fa.map(usize::from),
+            [2, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+        );
+
+        let rawprops4 = KlePropsObject {
+            f: Some(FontSize::new(5).unwrap()),
+            ..KlePropsObject::default()
+        };
+        props.update(rawprops4);
+        assert_eq!(props.fa.map(usize::from), [5; NUM_LEGENDS]);
+    }
+
+    #[test]
+    fn test_kle_props_next_key() {
+        let mut props = KleProps {
+            x: 2.0,
+            w: 3.0,
+            h: 1.5,
+            ..KleProps::default()
+        };
+        props.next_key();
+
+        assert_eq!(props.x, 5.);
+        assert_eq!(props.y, 0.);
+        assert_eq!(props.w, 1.);
+        assert_eq!(props.h, 1.);
+        assert_eq!(props.x2, 0.);
+        assert_eq!(props.y2, 0.);
+        assert_eq!(props.w2, 1.);
+        assert_eq!(props.h2, 1.);
+        assert_eq!(props.l, false);
+        assert_eq!(props.n, false);
+        assert_eq!(props.d, false);
+    }
+
+    #[test]
+    fn test_kle_props_next_line() {
+        let mut props = KleProps {
+            x: 2.0,
+            ..KleProps::default()
+        };
+        props.next_line();
+
+        assert_eq!(props.x, 0.);
+        assert_eq!(props.y, 1.);
+        assert_eq!(props.w, 1.);
+        assert_eq!(props.h, 1.);
+        assert_eq!(props.x2, 0.);
+        assert_eq!(props.y2, 0.);
+        assert_eq!(props.w2, 1.);
+        assert_eq!(props.h2, 1.);
+        assert_eq!(props.l, false);
+        assert_eq!(props.n, false);
+        assert_eq!(props.d, false);
+    }
+
+    #[test]
+    fn test_kle_props_build_key() {
+        let legends = "A\nB\nC\nD\nE\nF\nG\nH\nI\nJ\nK\nL";
+        let expected = ["A", "I", "C", "G", "J", "H", "B", "K", "D", "F", "E", "L"];
+
+        let props = KleProps::default();
+        let key = props.build_key(legends);
+
+        for (res, exp) in key.legends.iter().zip(expected) {
+            assert_eq!(res.as_ref().unwrap().text, exp);
+            assert_eq!(res.as_ref().unwrap().size, usize::from(FontSize::default()));
+            assert_eq!(res.as_ref().unwrap().color, color::LEGEND);
+        }
+        assert_eq!(key.color, color::KEY);
+        assert_eq!(key.x, 0.);
+        assert_eq!(key.y, 0.);
+        assert_eq!(key.w, 1.);
+        assert_eq!(key.h, 1.);
+        assert_eq!(key.x2, 0.);
+        assert_eq!(key.y2, 0.);
+        assert_eq!(key.w2, 1.);
+        assert_eq!(key.h2, 1.);
+        assert_eq!(key.rotation, 0.);
+        assert_eq!(key.rx, 0.);
+        assert_eq!(key.ry, 0.);
+        assert_eq!(key.profile, "");
+        assert_eq!(key.switch.mount, "");
+        assert_eq!(key.switch.brand, "");
+        assert_eq!(key.switch.typ, "");
+        assert!(!key.ghosted);
+        assert!(!key.stepped);
+        assert!(!key.homing);
+        assert!(!key.decal);
+
+        let props = KleProps { d: true, ..props };
+        let key = props.build_key(legends);
+        assert!(key.decal);
+
+        let props = KleProps { n: true, ..props };
+        let key = props.build_key(legends);
+        assert!(key.homing);
+
+        let props = KleProps {
+            p: "DSA".into(),
+            ..props
+        };
+        let key = props.build_key(legends);
+        assert_eq!(key.profile, "DSA");
+    }
+
+    #[test]
+    fn test_kle_layout_iterator() {
+        let kle: KleKeyboard = serde_json::from_str(
+            r#"[
+                {
+                    "meta": "data"
+                },
+                [
+                    {
+                        "a": 4,
+                        "unknown": "key"
+                    },
+                    "A",
+                    "B",
+                    {
+                        "x": -0.5,
+                        "y": 0.25
+                    },
+                    "C"
+                ],
+                [
+                    "D"
+                ]
+            ]"#,
+        )
+        .unwrap();
+
+        let iterator = KleLayoutIterator::new(kle.layout);
+        let keys: Vec<_> = iterator.collect();
+
+        assert_eq!(keys.len(), 4);
+        assert_eq!(keys[0].x, 0.0);
+        assert_eq!(keys[1].x, 1.0);
+        assert_eq!(keys[2].x, 1.5);
+        assert_eq!(keys[3].x, 0.0);
+    }
+}
