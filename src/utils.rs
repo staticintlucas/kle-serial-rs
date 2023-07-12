@@ -95,6 +95,54 @@ where
 mod tests {
     use super::*;
 
+    use serde::de::{
+        value::{Error as ValueError, UsizeDeserializer},
+        IntoDeserializer,
+    };
+
+    #[test]
+    fn test_bounded_usize_new() {
+        let value = BoundedUsize::<10, 5>::new(7);
+        assert!(value.is_ok());
+        assert_eq!(value.unwrap().0, 7);
+
+        let value = BoundedUsize::<10, 5>::new(17);
+        assert!(value.is_err());
+    }
+
+    #[test]
+    fn test_bounded_usize_debug() {
+        let value = BoundedUsize::<10, 5>::new(7).unwrap();
+
+        assert_eq!(format!("{value:?}"), "7");
+    }
+
+    #[test]
+    fn test_bounded_usize_into() {
+        let value = BoundedUsize::<10, 5>::new(7).unwrap();
+
+        assert_eq!(usize::from(value), 7);
+    }
+
+    #[test]
+    fn test_bounded_usize_default() {
+        let value = BoundedUsize::<10, 5>::default();
+
+        assert_eq!(value.0, 5);
+    }
+
+    #[test]
+    fn test_bounded_usize_deserialize() {
+        let deserializer: UsizeDeserializer<ValueError> = 7_usize.into_deserializer();
+        let value = BoundedUsize::<10, 5>::deserialize(deserializer);
+        assert!(value.is_ok());
+        assert_eq!(value.unwrap().0, 7);
+
+        let deserializer: UsizeDeserializer<ValueError> = 17_usize.into_deserializer();
+        let value = BoundedUsize::<10, 5>::deserialize(deserializer);
+        assert!(value.is_err());
+    }
+
     #[test]
     fn test_realign_legends() {
         let legends = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"].map(|text| {
