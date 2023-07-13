@@ -1,6 +1,31 @@
 # kle-serial
 
-Rust deserialisation library for Keyboard Layout Editor JSON files
+A Rust library for deserialising [Keyboard Layout Editor] files.
+Designed to be used in conjunction with [`serde_json`] to deserialize JSON files exported from KLE.
+
+[Keyboard Layout Editor]: http://www.keyboard-layout-editor.com/
+[`serde_json`]: https://crates.io/crates/serde_json
+
+## Example
+
+```Rust
+use kle_serial::Keyboard;
+
+let keyboard: Keyboard = serde_json::from_str(
+    r#"[
+        {"name": "example"},
+        [{"f":4},"!\n1\n¹\n¡"]
+    ]"#
+).unwrap();
+
+assert_eq!(keyboard.metadata.name, "example");
+assert_eq!(keyboard.keys.len(), 1);
+
+let legend = keyboard.keys[0].legends[0].as_ref().unwrap();
+
+assert_eq!(legend.text, "!");
+assert_eq!(legend.size, 4);
+```
 
 ## Licence
 
