@@ -183,12 +183,12 @@ impl KleProps {
             color: self.c,
             x: self.x,
             y: self.y,
-            w: self.w,
-            h: self.h,
+            width: self.w,
+            height: self.h,
             x2: self.x2,
             y2: self.y2,
-            w2: self.w2,
-            h2: self.h2,
+            width2: self.w2,
+            height2: self.h2,
             rotation: self.r,
             rx: self.rx,
             ry: self.ry,
@@ -562,12 +562,12 @@ mod tests {
         assert_eq!(key.color, color::KEY);
         assert_eq!(key.x, 0.);
         assert_eq!(key.y, 0.);
-        assert_eq!(key.w, 1.);
-        assert_eq!(key.h, 1.);
+        assert_eq!(key.width, 1.);
+        assert_eq!(key.height, 1.);
         assert_eq!(key.x2, 0.);
         assert_eq!(key.y2, 0.);
-        assert_eq!(key.w2, 1.);
-        assert_eq!(key.h2, 1.);
+        assert_eq!(key.width2, 1.);
+        assert_eq!(key.height2, 1.);
         assert_eq!(key.rotation, 0.);
         assert_eq!(key.rx, 0.);
         assert_eq!(key.ry, 0.);
