@@ -14,7 +14,7 @@ use kle_serial::Keyboard;
 let keyboard: Keyboard = serde_json::from_str(
     r#"[
         {"name": "example"},
-        [{"f":4},"!\n1\n¹\n¡"]
+        [{"f": 4}, "!\n1\n¹\n¡"]
     ]"#
 ).unwrap();
 
