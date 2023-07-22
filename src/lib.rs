@@ -234,6 +234,29 @@ impl<'de> Deserialize<'de> for Keyboard {
     }
 }
 
+/// An iterator of [`Key`]s deserialised from a KLE JSON file
+#[derive(Debug, Clone)]
+pub struct KeyIterator(KleLayoutIterator);
+
+impl<'de> Deserialize<'de> for KeyIterator {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let KleKeyboard { meta: _, layout } = KleKeyboard::deserialize(deserializer)?;
+
+        Ok(Self(KleLayoutIterator::new(layout)))
+    }
+}
+
+impl Iterator for KeyIterator {
+    type Item = Key;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.0.next()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -329,5 +352,47 @@ mod tests {
         assert_eq!(kb.keys.len(), 0);
 
         assert!(serde_json::from_str::<Keyboard>("null").is_err());
+    }
+
+    #[test]
+    fn test_key_iterator_deserialize() {
+        let keys: Vec<_> = serde_json::from_str::<KeyIterator>(
+            r#"[
+                {
+                    "name": "test",
+                    "unknown": "key"
+                },
+                [
+                    {
+                        "a": 4,
+                        "unknown2": "key"
+                    },
+                    "A",
+                    "B",
+                    "C"
+                ],
+                [
+                    "D"
+                ]
+            ]"#,
+        )
+        .unwrap()
+        .collect();
+
+        assert_eq!(keys.len(), 4);
+        assert_eq!(keys[2].legends[0].as_ref().unwrap().text, "C");
+
+        let keys: Vec<_> = serde_json::from_str::<KeyIterator>(r#"[["A"]]"#)
+            .unwrap()
+            .collect();
+        assert_eq!(keys.len(), 1);
+        assert_eq!(keys[0].legends[0].as_ref().unwrap().text, "A");
+
+        let keys: Vec<_> = serde_json::from_str::<KeyIterator>(r#"[{"notes": "'tis a test"}]"#)
+            .unwrap()
+            .collect();
+        assert_eq!(keys.len(), 0);
+
+        assert!(serde_json::from_str::<KeyIterator>("null").is_err());
     }
 }

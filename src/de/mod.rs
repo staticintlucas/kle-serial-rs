@@ -45,7 +45,7 @@ impl From<KleMetadata> for Metadata {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 #[allow(clippy::struct_excessive_bools)]
 struct KleProps {
     // Per-key properties
@@ -238,6 +238,7 @@ impl Default for KleProps {
     }
 }
 
+#[derive(Debug, Clone)]
 pub(crate) struct KleLayoutIterator {
     state: KleProps,
     row_iter: vec::IntoIter<Vec<KleLegendsOrProps>>,
