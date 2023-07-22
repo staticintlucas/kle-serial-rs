@@ -1,4 +1,4 @@
-use std::fmt::Debug;
+use std::{fmt::Debug, iter};
 
 use serde::{
     de::{Error, Unexpected},
@@ -84,6 +84,7 @@ where
     // Guaranteed to be in range because of newtype
     let mapping = LEGEND_MAPPING[usize::from(alignment)];
 
+    let values = values.into_iter().chain(iter::repeat(None));
     let mut sorted = mapping.iter().zip(values).collect::<Vec<_>>();
     sorted.sort_by_key(|el| el.0);
 
@@ -155,6 +156,19 @@ mod tests {
 
         let result = realign_legends(legends.clone(), Alignment::new(4).unwrap());
         let result_text = result.map(|l| l.unwrap().text);
+
+        assert_eq!(result_text, expected);
+
+        let legends = ["A", "C", "B", "D"].map(|text| {
+            Some(Legend {
+                text: text.into(),
+                ..Legend::default()
+            })
+        });
+        let expected = ["A", "", "B", "", "", "", "C", "", "D", "", "", ""];
+
+        let result = realign_legends(legends.clone(), Alignment::new(4).unwrap());
+        let result_text = result.map(|l| l.map(|l| l.text).unwrap_or(String::new()));
 
         assert_eq!(result_text, expected);
     }
