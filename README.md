@@ -21,10 +21,13 @@ let keyboard: Keyboard = serde_json::from_str(
 assert_eq!(keyboard.metadata.name, "example");
 assert_eq!(keyboard.keys.len(), 1);
 
+assert!(keyboard.keys[0].legends[0].is_some());
 let legend = keyboard.keys[0].legends[0].as_ref().unwrap();
 
 assert_eq!(legend.text, "!");
 assert_eq!(legend.size, 4);
+
+assert!(keyboard.keys[0].legends[1].is_none());
 ```
 
 ## Licence
