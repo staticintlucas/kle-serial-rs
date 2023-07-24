@@ -3,10 +3,9 @@
 A Rust library for deserialising [Keyboard Layout Editor] files.
 Designed to be used in conjunction with [`serde_json`] to deserialize JSON files exported from KLE.
 
-[Keyboard Layout Editor]: http://www.keyboard-layout-editor.com/
-[`serde_json`]: https://crates.io/crates/serde_json
-
 ## Example
+
+![example]
 
 ```rust
 use kle_serial::Keyboard;
@@ -29,6 +28,10 @@ assert_eq!(legend.size, 4);
 
 assert!(keyboard.keys[0].legends[1].is_none());
 ```
+
+[Keyboard Layout Editor]: http://www.keyboard-layout-editor.com/
+[`serde_json`]: https://crates.io/crates/serde_json
+[example]: doc/example.png
 
 ## Licence
 
