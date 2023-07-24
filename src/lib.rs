@@ -91,9 +91,10 @@ pub struct Key {
     /// Array of legends on the key. This array is indexed in left to right, top to bottom order
     /// as shown in the image below.
     ///
-    /// ![image](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAIAAAAn5KxJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAL1SURBVGhD7Zo9cvIwEIahy2kylHTcwceAjpuQGRouQUdaDpCCOoegpUmRd63Vz9qyVpYdx2TyVLH9evfRWvDNN2ZxfxK86Ol0Wq/Xy+VyMQOgARkosZwT3e12q9XqeDx+zAbIQAlixpBEIY5TfH1mQMzMlUQx5PYsr9fr++SgKbe3QAx6LIoNwactuOF2uz0ej68JQTs0bbtCj0WxefmcBYub2NKApmjNEhbopUT51skZInrZvtRsDp98RuPzsHnZXvigA8owYbRY1PfM6U7wutJRhOy6qa6fQbEoKtqWGaa15OZw0ZJBVRAelYpCzq82GEOa3OEbRNlSUVHkJ0Tlg5/rRFGwWbFUlGrZlvlzyklSJhIqFqV6ZtH5nnq0wxIUiwJ6QETeYyc00dpT4NJDRCflX3RsBojaLar9qxiif/DkNvXZUtGgo97cYiTS2eBrTzBgoo5MU8Q2260SpVD0S2QE0TxPY6Bm/X4CYXKYKPUF+hepHZQmStddNXtTzQgTrceQdPUdNVFJuF9HEe38BBjITpJclmcMUTFEbaIebaKiEsI+Wz7RYE6ZlkB/9F1ly0Un5l90bIaIuu2k7NFg2zGpberTIlUu6r878j/0QAn7yyQcJItFvWcftDXBzl8XLUpF64qHnv8XoSEpqxt9olTGNhVjSKCNk0EssvxBE7WF8gxyUuEYSXj4o0eZnqL9Q+KgWJTK9Hn0efvjByYKqFKN8gGpEeNJ4arK/BDRSfm7os/xsmFWr29SogA3YHET07YEiqjlvH/FdeJ1f+Zzcd6qRfXGf9NBx00i1jqMgCq6KGnaOqmS7BVEjaH7w9COhYcdIJEl6ho1mgac93v0QpZbBnfhJufRiDXv6iJLtC6E60RVVR2iBiFqm7c9GmfagSZozaLtl7ZRUDJfNDZRQ29R/9I2+hqc8Y26nzwTtHTZyE39RMVr8PQPC9DLoCxctrR3tdfWT1T8sAA8x081DBDHkLEhzCh+F2hAxszS4EVnzf3+DR1Awz3+fptYAAAAAElFTkSuQmCC)
+    /// ![alignment]
     ///
     /// Legends that are empty in KLE will be [`None`] when deserialised.
+    #[cfg_attr(doc, doc = embed_doc_image::embed_image!("alignment", "doc/alignment.png"))]
     pub legends: [Option<Legend>; NUM_LEGENDS],
     /// The colour of the key
     pub color: Color,

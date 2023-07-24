@@ -9,12 +9,13 @@ repository = "https://github.com/staticintlucas/kle-serial-rs"
 license = "MIT OR Apache-2.0"
 keywords = ["keyboard", "keycap", "keyset", "layout", "KLE"]
 categories = ["encoding", "parser-implementations"]
-exclude = [".github", ".pre-commit-config.yaml"]
+exclude = [".github", ".pre-commit-config.yaml", "doc"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 csscolorparser = { version = "0.6", features = ["named-colors"] }
+embed-doc-image = "0.1" # Needs to be in regular dependencies not dev-dependencies unfortunately
 rgb = { version = "0.8", default-features = false }
 serde = { version = "1.0", features = ["derive"] }
 
