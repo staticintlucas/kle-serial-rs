@@ -1,7 +1,12 @@
+#![warn(missing_docs, dead_code)]
+#![warn(clippy::all, clippy::pedantic, clippy::cargo)]
+
 //! A Rust library for deserialising [Keyboard Layout Editor] files. Designed to be used in
 //! conjunction with [`serde_json`] to deserialize JSON files exported from KLE.
 //!
 //! # Example
+//!
+//! ![example]
 //!
 //! ```
 //! use kle_serial::Keyboard;
@@ -27,9 +32,7 @@
 //!
 //! [Keyboard Layout Editor]: http://www.keyboard-layout-editor.com/
 //! [`serde_json`]: https://crates.io/crates/serde_json
-
-#![warn(missing_docs, dead_code)]
-#![warn(clippy::all, clippy::pedantic, clippy::cargo)]
+#![cfg_attr(doc, doc = embed_doc_image::embed_image!("example", "doc/example.png"))]
 
 mod de;
 mod utils;
@@ -52,7 +55,13 @@ pub(crate) mod color {
     pub(crate) const LEGEND: Color = Color::new(0x00, 0x00, 0x00, 0xFF); // #000000
 }
 
-/// Struct containing data for a single legend.
+/// A struct representing a single legend.
+///
+/// **Note**: This is called a `label` in the official TypeScript [`kle-serial`] library and some
+/// other deserialisation libraries. It is called `Legend` here to follow the common terminology
+/// and match KLE's own UI.
+///
+/// [`kle-serial`]: https://github.com/ijprest/kle-serial
 #[derive(Debug, Clone)]
 pub struct Legend {
     /// The legend's text.
@@ -73,10 +82,10 @@ impl Default for Legend {
     }
 }
 
-/// Struct containing data on a key switch.
+/// A struct representing a key switch.
 #[derive(Debug, Clone, Default)]
 pub struct Switch {
-    /// The switch mount. Typically either "cherry" or "alps".
+    /// The switch mount. Typically either `"cherry"` or `"alps"`.
     pub mount: String,
     /// The switch brand. KLE uses lowercase brand names.
     pub brand: String,
@@ -84,39 +93,55 @@ pub struct Switch {
     pub typ: String,
 }
 
-/// Struct containing data on a single key
+/// A struct representing a single key.
 #[derive(Debug, Clone)]
 #[allow(clippy::struct_excessive_bools)]
 pub struct Key {
-    /// Array of legends on the key. This array is indexed in left to right, top to bottom order
-    /// as shown in the image below.
+    /// The key's legends. This array is indexed in left to right, top to bottom order as shown in
+    /// the image below.
     ///
     /// ![alignment]
     ///
-    /// Legends that are empty in KLE will be [`None`] when deserialised.
+    /// Legends that are empty in KLE will be deserialised as [`None`].
     #[cfg_attr(doc, doc = embed_doc_image::embed_image!("alignment", "doc/alignment.png"))]
     pub legends: [Option<Legend>; NUM_LEGENDS],
     /// The colour of the key
     pub color: Color,
     /// The X position of the key in keyboard units (19.05 mm or 0.75 in).
+    ///
+    /// **Note**: KLE has some strange behaviour when it comes to stepped and L-shaped keys. The
+    /// 'true' X position will be less if the key's `x2` field is negative. This behaviour can be
+    /// observed by placing an ISO enter in KLE; `x` is 0.25 and `x2` is &minus;0.25.
     pub x: f64,
     /// The Y position of the key in keyboard units (19.05 mm or 0.75 in).
+    ///
+    /// **Note**: KLE has some strange behaviour when it comes to stepped and L-shaped keys. The
+    /// 'true' Y position will be less if the key's `y2` field is negative. This behaviour can be
+    /// observed by placing an ISO enter in KLE; `x` is 0.25 and `x2` is &minus;0.25.
     pub y: f64,
     /// The width of the key in keyboard units (19.05 mm or 0.75 in).
     pub width: f64,
     /// The height of the key in keyboard units (19.05 mm or 0.75 in).
     pub height: f64,
-    /// The relative X position of a stepped or L-shaped part of the key. This is set to 0.0 for
-    /// regular keys, but is used for stepped caps lock and ISO enter keys, for example.
+    /// The relative X position of a stepped or L-shaped part of the key.
+    ///
+    /// This is set to 0.0 for regular keys, but is used for stepped caps lock and ISO enter keys,
+    /// amongst others.
     pub x2: f64,
-    /// The relative Y position of a stepped or L-shaped part of the key. This is set to 0.0 for
-    /// regular keys, but is used for stepped caps lock and ISO enter keys, for example.
+    /// The relative Y position of a stepped or L-shaped part of the key.
+    ///
+    /// This is set to 0.0 for regular keys, but is used for stepped caps lock and ISO enter keys,
+    /// amongst others.
     pub y2: f64,
-    /// The width of a stepped or L-shaped part of the key. This is equal to the width for
-    /// regular keys, but is used for stepped caps lock and ISO enter keys, for example.
+    /// The width of a stepped or L-shaped part of the key.
+    ///
+    /// This is equal to the width for regular keys, but is used for stepped caps lock and ISO
+    /// enter keys, amongst others.
     pub width2: f64,
-    /// The height of a stepped or L-shaped part of the key. This is equal to the height for
-    /// regular keys, but is used for stepped caps lock and ISO enter keys, for example.
+    /// The height of a stepped or L-shaped part of the key.
+    ///
+    /// This is equal to the height for regular keys, but is used for stepped caps lock and ISO
+    /// enter keys, amongst others.
     pub height2: f64,
     /// The rotation of the key in degrees.
     pub rotation: f64,
@@ -164,35 +189,47 @@ impl Default for Key {
     }
 }
 
-/// Struct containing the background style of a KLE layout.
+/// The background style of a KLE layout.
 #[derive(Debug, Clone, Default)]
 pub struct Background {
     /// The name of the background.
+    ///
+    /// When generated by KLE, this is the same as the name shown in the dropdown menu, for example
+    /// `"Carbon fibre 1"`.
     pub name: String,
     /// The CSS style of the background.
+    ///
+    /// When generated by KLE, this sets the [`background-image`] CSS property to a relative url
+    /// where the associated image is located. For example the *Carbon fibre 1* background will set
+    /// `style` to `"background-image: url('/bg/carbonfibre/carbon_texture1879.png');"`.
+    ///
+    /// [`background-image`]: https://developer.mozilla.org/en-US/docs/Web/CSS/background-image
     pub style: String,
 }
 
-/// Metadata struct for the keyboard layout
+/// The metadata for the keyboard layout.
 #[derive(Debug, Clone)]
 pub struct Metadata {
     /// Background colour for the layout.
     pub background_color: Color,
     /// Background style information for the layout.
     pub background: Background,
-    /// Corner radii for the background using CSS `border-radius` syntax.
+    /// Corner radii for the background using CSS [`border-radius`] syntax.
+    ///
+    /// [`border-radius`]: https://developer.mozilla.org/en-US/docs/Web/CSS/border-radius
     pub radii: String,
     /// The name of the layout.
     pub name: String,
     /// The author of the layout.
     pub author: String,
-    /// The default switch type used by the layout. This can also be set for individual keys.
+    /// The default switch type used by the layout. This can be set separately for individual keys.
     pub switch: Switch,
     /// Whether the switch is plate mounted.
     pub plate_mount: bool,
     /// Whether the switch is PCB mounted.
     pub pcb_mount: bool,
-    /// Notes for the layout. KLE expects Markdown syntax.
+    /// Notes for the layout. KLE expects GitHub-flavoured Markdown and can render this using the
+    /// *preview* button, but any string data is considered valid.
     pub notes: String,
 }
 
@@ -215,9 +252,9 @@ impl Default for Metadata {
 /// A keyboard deserialised from a KLE JSON file.
 #[derive(Debug, Clone, Default)]
 pub struct Keyboard {
-    /// Keyboard layout metadata.
+    /// Keyboard layout's metadata.
     pub metadata: Metadata,
-    /// The keys in the layout.
+    /// The layout's keys.
     pub keys: Vec<Key>,
 }
 
@@ -235,7 +272,7 @@ impl<'de> Deserialize<'de> for Keyboard {
     }
 }
 
-/// An iterator of [`Key`]s deserialised from a KLE JSON file
+/// An iterator of [`Key`]s deserialised from a KLE JSON file.
 #[derive(Debug, Clone)]
 pub struct KeyIterator(KleLayoutIterator);
 
@@ -244,6 +281,7 @@ impl<'de> Deserialize<'de> for KeyIterator {
     where
         D: serde::Deserializer<'de>,
     {
+        // TODO don't allocate Vec's here?
         let KleKeyboard { meta: _, layout } = KleKeyboard::deserialize(deserializer)?;
 
         Ok(Self(KleLayoutIterator::new(layout)))
