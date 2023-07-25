@@ -1,4 +1,13 @@
-# kle-serial
+# kle-serial &emsp; [![Test Status]][actions] [![Test Coverage]][codecov] [![Crate Version]][crates] [![Rust Version]][crates]
+
+[test status]: https://img.shields.io/github/actions/workflow/status/staticintlucas/kle-serial-rs/test.yml?branch=main&label=tests&style=flat-square
+[test coverage]: https://img.shields.io/codecov/c/gh/staticintlucas/kle-serial-rs?style=flat-square
+[crate version]: https://img.shields.io/crates/v/kle-serial?style=flat-square
+[rust version]: https://img.shields.io/badge/rust-1.63%2B-informational?style=flat-square
+
+[actions]: https://github.com/staticintlucas/kle-serial-rs/actions?query=branch%3Amain
+[codecov]: https://app.codecov.io/github/staticintlucas/kle-serial-rs
+[crates]: https://crates.io/crates/kle-serial
 
 A Rust library for deserialising [Keyboard Layout Editor] files.
 Designed to be used in conjunction with [`serde_json`] to deserialize JSON files exported from KLE.
