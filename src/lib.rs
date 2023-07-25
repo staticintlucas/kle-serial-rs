@@ -281,7 +281,6 @@ impl<'de> Deserialize<'de> for KeyIterator {
     where
         D: serde::Deserializer<'de>,
     {
-        // TODO don't allocate Vec's here?
         let KleKeyboard { meta: _, layout } = KleKeyboard::deserialize(deserializer)?;
 
         Ok(Self(KleLayoutIterator::new(layout)))
