@@ -1,6 +1,6 @@
 [package]
 name = "kle-serial"
-version = "0.1.1"
+version = "0.2.0"
 authors = ["Lucas Jansen"]
 edition = "2021"
 rust-version = "1.63"
