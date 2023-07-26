@@ -15,7 +15,6 @@ exclude = [".github", ".pre-commit-config.yaml", "doc"]
 
 [dependencies]
 csscolorparser = { version = "0.6", features = ["named-colors"] }
-embed-doc-image = "0.1" # Needs to be in regular dependencies not dev-dependencies unfortunately
 rgb = { version = "0.8", default-features = false }
 serde = { version = "1.0", features = ["derive"] }
 

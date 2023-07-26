@@ -32,7 +32,7 @@
 //!
 //! [Keyboard Layout Editor]: http://www.keyboard-layout-editor.com/
 //! [`serde_json`]: https://crates.io/crates/serde_json
-#![cfg_attr(doc, doc = embed_doc_image::embed_image!("example", "doc/example.png"))]
+//! [example]: https://raw.githubusercontent.com/staticintlucas/kle-serial-rs/main/doc/example.png
 
 mod de;
 mod utils;
@@ -103,7 +103,8 @@ pub struct Key {
     /// ![alignment]
     ///
     /// Legends that are empty in KLE will be deserialised as [`None`].
-    #[cfg_attr(doc, doc = embed_doc_image::embed_image!("alignment", "doc/alignment.png"))]
+    ///
+    /// [alignment]: https://raw.githubusercontent.com/staticintlucas/kle-serial-rs/main/doc/alignment.png
     pub legends: [Option<Legend>; NUM_LEGENDS],
     /// The colour of the key
     pub color: Color,
