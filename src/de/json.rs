@@ -134,11 +134,14 @@ impl<'de> Deserialize<'de> for KleKeyboard {
             where
                 A: SeqAccess<'de>,
             {
+                // The order in this enum is important. Serde will try to deserialize a vec first,
+                // otherwise a struct. This is important since you can deserialise a JSON sequence
+                // to a struct but not a JSON object to a Vec.
                 #[derive(Deserialize)]
                 #[serde(untagged)]
                 enum MapOrSeq {
-                    Map(Box<KleMetadata>),
                     Seq(Vec<KleLegendsOrProps>),
+                    Map(Box<KleMetadata>),
                 }
 
                 // Set a max initial size of 2**12, this is also what serde does internally
