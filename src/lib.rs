@@ -9,7 +9,7 @@
 //! ![example]
 //!
 //! ```
-//! use kle_serial::Keyboard;
+//! use kle_serial::Keyboard; // Equivalent to using kle_serial::Keyboard<f64> or kle_serial::f64::Keyboard
 //!
 //! let keyboard: Keyboard = serde_json::from_str(
 //!     r#"[
@@ -35,8 +35,11 @@
 //! [example]: https://raw.githubusercontent.com/staticintlucas/kle-serial-rs/main/doc/example.png
 
 mod de;
+pub mod f32;
+pub mod f64;
 mod utils;
 
+use num_traits::real::Real;
 use serde::Deserialize;
 
 use de::{KleKeyboard, KleLayoutIterator};
@@ -96,7 +99,10 @@ pub struct Switch {
 /// A struct representing a single key.
 #[derive(Debug, Clone)]
 #[allow(clippy::struct_excessive_bools)]
-pub struct Key {
+pub struct Key<T = f64>
+where
+    T: Real,
+{
     /// The key's legends. This array is indexed in left to right, top to bottom order as shown in
     /// the image below.
     ///
@@ -113,43 +119,43 @@ pub struct Key {
     /// **Note**: KLE has some strange behaviour when it comes to stepped and L-shaped keys. The
     /// 'true' X position will be less if the key's `x2` field is negative. This behaviour can be
     /// observed by placing an ISO enter in KLE; `x` is 0.25 and `x2` is &minus;0.25.
-    pub x: f64,
+    pub x: T,
     /// The Y position of the key in keyboard units (19.05 mm or 0.75 in).
     ///
     /// **Note**: KLE has some strange behaviour when it comes to stepped and L-shaped keys. The
     /// 'true' Y position will be less if the key's `y2` field is negative. This behaviour can be
     /// observed by placing an ISO enter in KLE; `x` is 0.25 and `x2` is &minus;0.25.
-    pub y: f64,
+    pub y: T,
     /// The width of the key in keyboard units (19.05 mm or 0.75 in).
-    pub width: f64,
+    pub width: T,
     /// The height of the key in keyboard units (19.05 mm or 0.75 in).
-    pub height: f64,
+    pub height: T,
     /// The relative X position of a stepped or L-shaped part of the key.
     ///
     /// This is set to 0.0 for regular keys, but is used for stepped caps lock and ISO enter keys,
     /// amongst others.
-    pub x2: f64,
+    pub x2: T,
     /// The relative Y position of a stepped or L-shaped part of the key.
     ///
     /// This is set to 0.0 for regular keys, but is used for stepped caps lock and ISO enter keys,
     /// amongst others.
-    pub y2: f64,
+    pub y2: T,
     /// The width of a stepped or L-shaped part of the key.
     ///
     /// This is equal to the width for regular keys, but is used for stepped caps lock and ISO
     /// enter keys, amongst others.
-    pub width2: f64,
+    pub width2: T,
     /// The height of a stepped or L-shaped part of the key.
     ///
     /// This is equal to the height for regular keys, but is used for stepped caps lock and ISO
     /// enter keys, amongst others.
-    pub height2: f64,
+    pub height2: T,
     /// The rotation of the key in degrees.
-    pub rotation: f64,
+    pub rotation: T,
     /// The X coordinate for the centre of rotation of the key.
-    pub rx: f64,
+    pub rx: T,
     /// The Y coordinate for the centre of rotation of the key.
-    pub ry: f64,
+    pub ry: T,
     /// The keycap profile of the key.
     pub profile: String,
     /// The key switch.
@@ -164,22 +170,25 @@ pub struct Key {
     pub decal: bool,
 }
 
-impl Default for Key {
+impl<T> Default for Key<T>
+where
+    T: Real,
+{
     fn default() -> Self {
         Self {
             legends: std::array::from_fn(|_| None),
             color: color::KEY,
-            x: 0.,
-            y: 0.,
-            width: 1.,
-            height: 1.,
-            x2: 0.,
-            y2: 0.,
-            width2: 1.,
-            height2: 1.,
-            rotation: 0.,
-            rx: 0.,
-            ry: 0.,
+            x: T::zero(),
+            y: T::zero(),
+            width: T::one(),
+            height: T::one(),
+            x2: T::zero(),
+            y2: T::zero(),
+            width2: T::one(),
+            height2: T::one(),
+            rotation: T::zero(),
+            rx: T::zero(),
+            ry: T::zero(),
             profile: String::new(),
             switch: Switch::default(),
             ghosted: false,
@@ -252,14 +261,20 @@ impl Default for Metadata {
 
 /// A keyboard deserialised from a KLE JSON file.
 #[derive(Debug, Clone, Default)]
-pub struct Keyboard {
+pub struct Keyboard<T = f64>
+where
+    T: Real,
+{
     /// Keyboard layout's metadata.
     pub metadata: Metadata,
     /// The layout's keys.
-    pub keys: Vec<Key>,
+    pub keys: Vec<Key<T>>,
 }
 
-impl<'de> Deserialize<'de> for Keyboard {
+impl<'de, T> Deserialize<'de> for Keyboard<T>
+where
+    T: Real + Deserialize<'de>,
+{
     fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
@@ -275,9 +290,14 @@ impl<'de> Deserialize<'de> for Keyboard {
 
 /// An iterator of [`Key`]s deserialised from a KLE JSON file.
 #[derive(Debug, Clone)]
-pub struct KeyIterator(KleLayoutIterator);
+pub struct KeyIterator<T = f64>(KleLayoutIterator<T>)
+where
+    T: Real;
 
-impl<'de> Deserialize<'de> for KeyIterator {
+impl<'de, T> Deserialize<'de> for KeyIterator<T>
+where
+    T: Real + Deserialize<'de>,
+{
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
@@ -288,8 +308,11 @@ impl<'de> Deserialize<'de> for KeyIterator {
     }
 }
 
-impl Iterator for KeyIterator {
-    type Item = Key;
+impl<T> Iterator for KeyIterator<T>
+where
+    T: Real,
+{
+    type Item = Key<T>;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.0.next()
@@ -311,7 +334,7 @@ mod tests {
 
     #[test]
     fn test_key_default() {
-        let key = Key::default();
+        let key = <Key>::default();
 
         for leg in key.legends {
             assert!(leg.is_none());
@@ -427,9 +450,10 @@ mod tests {
         assert_eq!(keys.len(), 1);
         assert_eq!(keys[0].legends[0].as_ref().unwrap().text, "A");
 
-        let keys: Vec<_> = serde_json::from_str::<KeyIterator>(r#"[{"notes": "'tis a test"}]"#)
-            .unwrap()
-            .collect();
+        let keys: Vec<_> =
+            serde_json::from_str::<KeyIterator>(r#"[{"notes": "'tis a test"}]"#)
+                .unwrap()
+                .collect();
         assert_eq!(keys.len(), 0);
 
         assert!(serde_json::from_str::<KeyIterator>("null").is_err());

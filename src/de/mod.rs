@@ -10,6 +10,7 @@ use crate::{
 use json::{KleBackground, KleLegendsOrProps, KleMetadata, KlePropsObject};
 
 pub(crate) use json::KleKeyboard;
+use num_traits::real::Real;
 
 impl From<KleBackground> for Background {
     fn from(value: KleBackground) -> Self {
@@ -47,24 +48,27 @@ impl From<KleMetadata> for Metadata {
 
 #[derive(Debug, Clone)]
 #[allow(clippy::struct_excessive_bools)]
-struct KleProps {
+struct KleProps<T = f64>
+where
+    T: Real,
+{
     // Per-key properties
-    x: f64,
-    y: f64,
-    w: f64,
-    h: f64,
-    x2: f64,
-    y2: f64,
-    w2: f64,
-    h2: f64,
+    x: T,
+    y: T,
+    w: T,
+    h: T,
+    x2: T,
+    y2: T,
+    w2: T,
+    h2: T,
     l: bool, // stepped
     n: bool, // homing
     d: bool, // decal
 
     // Persistent properties
-    r: f64,
-    rx: f64,
-    ry: f64,
+    r: T,
+    rx: T,
+    ry: T,
     g: bool,                     // ghosted
     sm: String,                  // switch mount
     sb: String,                  // switch brand
@@ -78,8 +82,11 @@ struct KleProps {
     fa: [FontSize; NUM_LEGENDS], // font size array
 }
 
-impl KleProps {
-    fn update(&mut self, props: KlePropsObject) {
+impl<T> KleProps<T>
+where
+    T: Real,
+{
+    fn update(&mut self, props: KlePropsObject<T>) {
         let f = props.f.unwrap_or(self.f);
         let fa = if let Some(fa) = props.fa {
             std::array::from_fn(|i| match fa.get(i).copied() {
@@ -113,14 +120,14 @@ impl KleProps {
         };
 
         // Per-key properties
-        self.x = x + props.x.unwrap_or(0.0);
-        self.y = y + props.y.unwrap_or(0.0);
-        self.w = props.w.unwrap_or(1.);
-        self.h = props.h.unwrap_or(1.);
-        self.x2 = props.x2.unwrap_or(0.);
-        self.y2 = props.y2.unwrap_or(0.);
-        self.w2 = props.w2.or(props.w).unwrap_or(1.);
-        self.h2 = props.h2.or(props.h).unwrap_or(1.);
+        self.x = x + props.x.unwrap_or(T::zero());
+        self.y = y + props.y.unwrap_or(T::zero());
+        self.w = props.w.unwrap_or(T::one());
+        self.h = props.h.unwrap_or(T::one());
+        self.x2 = props.x2.unwrap_or(T::zero());
+        self.y2 = props.y2.unwrap_or(T::zero());
+        self.w2 = props.w2.or(props.w).unwrap_or(T::one());
+        self.h2 = props.h2.or(props.h).unwrap_or(T::one());
         self.l = props.l.unwrap_or(false);
         self.n = props.n.unwrap_or(false);
         self.d = props.d.unwrap_or(false);
@@ -144,14 +151,14 @@ impl KleProps {
     #[inline]
     fn next_key(&mut self) {
         // Increment x
-        self.x += self.w.max(self.x2 + self.w2);
+        self.x = self.x + self.w.max(self.x2 + self.w2);
         // Reset per-key properties
-        self.w = 1.;
-        self.h = 1.;
-        self.x2 = 0.;
-        self.y2 = 0.;
-        self.w2 = 1.;
-        self.h2 = 1.;
+        self.w = T::one();
+        self.h = T::one();
+        self.x2 = T::zero();
+        self.y2 = T::zero();
+        self.w2 = T::one();
+        self.h2 = T::one();
         self.l = false;
         self.n = false;
         self.d = false;
@@ -161,10 +168,10 @@ impl KleProps {
     fn next_line(&mut self) {
         self.next_key();
         self.x = self.rx; // x resets to rx
-        self.y += 1.;
+        self.y = self.y + T::one();
     }
 
-    fn build_key(&self, legends: &str) -> Key {
+    fn build_key(&self, legends: &str) -> Key<T> {
         let legends =
             legends
                 .lines()
@@ -206,23 +213,26 @@ impl KleProps {
     }
 }
 
-impl Default for KleProps {
+impl<T> Default for KleProps<T>
+where
+    T: Real,
+{
     fn default() -> Self {
         Self {
-            x: 0.,
-            y: 0.,
-            w: 1.,
-            h: 1.,
-            x2: 0.,
-            y2: 0.,
-            w2: 1.,
-            h2: 1.,
+            x: T::zero(),
+            y: T::zero(),
+            w: T::one(),
+            h: T::one(),
+            x2: T::zero(),
+            y2: T::zero(),
+            w2: T::one(),
+            h2: T::one(),
             l: false,
             n: false,
             d: false,
-            r: 0.,
-            rx: 0.,
-            ry: 0.,
+            r: T::zero(),
+            rx: T::zero(),
+            ry: T::zero(),
             g: false,
             sm: String::new(),
             sb: String::new(),
@@ -239,14 +249,20 @@ impl Default for KleProps {
 }
 
 #[derive(Debug, Clone)]
-pub(crate) struct KleLayoutIterator {
-    state: KleProps,
-    row_iter: vec::IntoIter<Vec<KleLegendsOrProps>>,
-    key_iter: vec::IntoIter<KleLegendsOrProps>,
+pub(crate) struct KleLayoutIterator<T = f64>
+where
+    T: Real,
+{
+    state: KleProps<T>,
+    row_iter: vec::IntoIter<Vec<KleLegendsOrProps<T>>>,
+    key_iter: vec::IntoIter<KleLegendsOrProps<T>>,
 }
 
-impl KleLayoutIterator {
-    pub(crate) fn new(kle: Vec<Vec<KleLegendsOrProps>>) -> Self {
+impl<T> KleLayoutIterator<T>
+where
+    T: Real,
+{
+    pub(crate) fn new(kle: Vec<Vec<KleLegendsOrProps<T>>>) -> Self {
         let state = KleProps::default();
         let mut row_iter = kle.into_iter();
         let key_iter = row_iter.next().unwrap_or(Vec::new()).into_iter();
@@ -258,8 +274,11 @@ impl KleLayoutIterator {
     }
 }
 
-impl Iterator for KleLayoutIterator {
-    type Item = Key;
+impl<T> Iterator for KleLayoutIterator<T>
+where
+    T: Real,
+{
+    type Item = Key<T>;
 
     fn next(&mut self) -> Option<Self::Item> {
         let legends = loop {
@@ -552,7 +571,7 @@ mod tests {
         let legends = "A\nB\nC\nD\nE\nF\nG\nH\nI\nJ\nK\nL";
         let expected = ["A", "I", "C", "G", "J", "H", "B", "K", "D", "F", "E", "L"];
 
-        let props = KleProps::default();
+        let props = <KleProps>::default();
         let key = props.build_key(legends);
 
         for (res, exp) in key.legends.iter().zip(expected) {

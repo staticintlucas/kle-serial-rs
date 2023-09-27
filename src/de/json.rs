@@ -1,6 +1,7 @@
-use std::fmt;
+use std::{fmt, marker::PhantomData};
 
 use csscolorparser::Color as CssColor;
+use num_traits::real::Real;
 use serde::{
     de::{Error, SeqAccess, Unexpected, Visitor},
     Deserialize, Deserializer,
@@ -70,20 +71,23 @@ pub(crate) struct KleMetadata {
     pub plate: Option<bool>,
 }
 
-#[derive(Deserialize, Default, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone)]
 #[serde(default)]
-pub(crate) struct KlePropsObject {
-    pub x: Option<f64>,
-    pub y: Option<f64>,
-    pub w: Option<f64>,
-    pub h: Option<f64>,
-    pub x2: Option<f64>,
-    pub y2: Option<f64>,
-    pub w2: Option<f64>,
-    pub h2: Option<f64>,
-    pub r: Option<f64>,
-    pub rx: Option<f64>,
-    pub ry: Option<f64>,
+pub(crate) struct KlePropsObject<T = f64>
+where
+    T: Real,
+{
+    pub x: Option<T>,
+    pub y: Option<T>,
+    pub w: Option<T>,
+    pub h: Option<T>,
+    pub x2: Option<T>,
+    pub y2: Option<T>,
+    pub w2: Option<T>,
+    pub h2: Option<T>,
+    pub r: Option<T>,
+    pub rx: Option<T>,
+    pub ry: Option<T>,
     pub l: Option<bool>,
     pub n: Option<bool>,
     pub d: Option<bool>,
@@ -102,29 +106,77 @@ pub(crate) struct KlePropsObject {
     pub fa: Option<Vec<FontSize>>,
 }
 
+// Can't derive Default unless we add T: Default trait bound
+impl<T> Default for KlePropsObject<T>
+where
+    T: Real,
+{
+    fn default() -> Self {
+        Self {
+            x: None,
+            y: None,
+            w: None,
+            h: None,
+            x2: None,
+            y2: None,
+            w2: None,
+            h2: None,
+            r: None,
+            rx: None,
+            ry: None,
+            l: None,
+            n: None,
+            d: None,
+            g: None,
+            sm: None,
+            sb: None,
+            st: None,
+            c: None,
+            t: None,
+            a: None,
+            p: None,
+            f: None,
+            f2: None,
+            fa: None,
+        }
+    }
+}
+
 // Represents either a key or a JSON object containing properties for the next key(s)
 #[derive(Deserialize, Debug, Clone)]
 #[serde(untagged)]
-pub(crate) enum KleLegendsOrProps {
-    Props(Box<KlePropsObject>),
+pub(crate) enum KleLegendsOrProps<T = f64>
+where
+    T: Real,
+{
+    Props(Box<KlePropsObject<T>>),
     Legend(String),
 }
 
 #[derive(Debug, Clone)]
-pub(crate) struct KleKeyboard {
+pub(crate) struct KleKeyboard<T = f64>
+where
+    T: Real,
+{
     pub meta: KleMetadata,
-    pub layout: Vec<Vec<KleLegendsOrProps>>,
+    pub layout: Vec<Vec<KleLegendsOrProps<T>>>,
 }
 
-impl<'de> Deserialize<'de> for KleKeyboard {
-    fn deserialize<D>(deserializer: D) -> Result<KleKeyboard, D::Error>
+impl<'de, T> Deserialize<'de> for KleKeyboard<T>
+where
+    T: Real + Deserialize<'de>,
+{
+    fn deserialize<D>(deserializer: D) -> Result<KleKeyboard<T>, D::Error>
     where
         D: Deserializer<'de>,
     {
-        struct KleFileVisitor;
+        struct KleFileVisitor<T>(PhantomData<T>);
 
-        impl<'de> Visitor<'de> for KleFileVisitor {
-            type Value = KleKeyboard;
+        impl<'de, T> Visitor<'de> for KleFileVisitor<T>
+        where
+            T: Real + Deserialize<'de>,
+        {
+            type Value = KleKeyboard<T>;
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
                 formatter.write_str("a sequence")
@@ -139,8 +191,11 @@ impl<'de> Deserialize<'de> for KleKeyboard {
                 // to a struct but not a JSON object to a Vec.
                 #[derive(Deserialize)]
                 #[serde(untagged)]
-                enum MapOrSeq {
-                    Seq(Vec<KleLegendsOrProps>),
+                enum MapOrSeq<T>
+                where
+                    T: Real,
+                    {
+                    Seq(Vec<KleLegendsOrProps<T>>),
                     Map(Box<KleMetadata>),
                 }
 
@@ -164,7 +219,7 @@ impl<'de> Deserialize<'de> for KleKeyboard {
             }
         }
 
-        deserializer.deserialize_seq(KleFileVisitor)
+        deserializer.deserialize_seq(KleFileVisitor(PhantomData))
     }
 }
 
@@ -246,7 +301,8 @@ mod tests {
         assert!(result2.meta.name.is_none());
         assert_eq!(result2.layout.len(), 1);
 
-        let result3: KleKeyboard = serde_json::from_str(r#"[{"notes": "'tis a test"}]"#).unwrap();
+        let result3: KleKeyboard =
+            serde_json::from_str(r#"[{"notes": "'tis a test"}]"#).unwrap();
         assert_matches!(result3.meta.notes, Some(notes) if notes == "'tis a test");
         assert_eq!(result3.layout.len(), 0);
 

@@ -15,6 +15,7 @@ exclude = [".github", ".pre-commit-config.yaml", "doc"]
 
 [dependencies]
 csscolorparser = { version = "0.6", features = ["named-colors"] }
+num-traits = { version = "0.2" }
 rgb = { version = "0.8", default-features = false }
 serde = { version = "1.0", features = ["derive"] }
 
