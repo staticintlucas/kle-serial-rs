@@ -194,7 +194,7 @@ where
                 enum MapOrSeq<T>
                 where
                     T: Real,
-                    {
+                {
                     Seq(Vec<KleLegendsOrProps<T>>),
                     Map(Box<KleMetadata>),
                 }
@@ -301,8 +301,7 @@ mod tests {
         assert!(result2.meta.name.is_none());
         assert_eq!(result2.layout.len(), 1);
 
-        let result3: KleKeyboard =
-            serde_json::from_str(r#"[{"notes": "'tis a test"}]"#).unwrap();
+        let result3: KleKeyboard = serde_json::from_str(r#"[{"notes": "'tis a test"}]"#).unwrap();
         assert_matches!(result3.meta.notes, Some(notes) if notes == "'tis a test");
         assert_eq!(result3.layout.len(), 0);
 

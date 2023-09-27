@@ -450,10 +450,9 @@ mod tests {
         assert_eq!(keys.len(), 1);
         assert_eq!(keys[0].legends[0].as_ref().unwrap().text, "A");
 
-        let keys: Vec<_> =
-            serde_json::from_str::<KeyIterator>(r#"[{"notes": "'tis a test"}]"#)
-                .unwrap()
-                .collect();
+        let keys: Vec<_> = serde_json::from_str::<KeyIterator>(r#"[{"notes": "'tis a test"}]"#)
+            .unwrap()
+            .collect();
         assert_eq!(keys.len(), 0);
 
         assert!(serde_json::from_str::<KeyIterator>("null").is_err());
