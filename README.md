@@ -17,7 +17,7 @@ Designed to be used in conjunction with [`serde_json`] to deserialize JSON files
 ![example]
 
 ```rust
-use kle_serial::Keyboard;
+use kle_serial::Keyboard; // Equivalent to kle_serial::Keyboard<f64> or kle_serial::f64::Keyboard
 
 let keyboard: Keyboard = serde_json::from_str(
     r#"[

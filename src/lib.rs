@@ -9,7 +9,7 @@
 //! ![example]
 //!
 //! ```
-//! use kle_serial::Keyboard; // Equivalent to using kle_serial::Keyboard<f64> or kle_serial::f64::Keyboard
+//! use kle_serial::Keyboard; // Equivalent to kle_serial::Keyboard<f64> or kle_serial::f64::Keyboard
 //!
 //! let keyboard: Keyboard = serde_json::from_str(
 //!     r#"[
