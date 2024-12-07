@@ -8,14 +8,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Setup toolchain
         uses: dtolnay/rust-toolchain@v1
         with:
           toolchain: stable
           components: rustfmt, clippy
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.x
       - name: Run pre-commit
-        uses: pre-commit/action@v3.0.0
+        uses: pre-commit/action@v3.0.1
         with:
           extra_args: --all-files
         env:
@@ -30,7 +34,7 @@ jobs:
         rust: [stable, 1.63.0]
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Setup toolchain
         uses: dtolnay/rust-toolchain@v1
         with:
@@ -48,14 +52,16 @@ jobs:
     needs: [lint, test]
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Setup toolchain
         uses: dtolnay/rust-toolchain@v1
         with:
           toolchain: stable
           components: llvm-tools
       - name: Setup grcov
-        run: cargo install grcov
+        uses: taiki-e/install-action@v2
+        with:
+          tool: grcov
       - name: Run cargo test
         run: cargo test --lib
         env:
@@ -74,6 +80,8 @@ jobs:
           --ignore '/*'
           --excl-line '(^\s*#\[derive\([\w, ]*\)\]|unreachable!\(\))'
       - name: Upload to codecov.io
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           file: lcov.info
+          fail_ci_if_error: true
