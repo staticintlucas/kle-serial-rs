@@ -65,7 +65,7 @@ pub(crate) mod color {
 /// and match KLE's own UI.
 ///
 /// [`kle-serial`]: https://github.com/ijprest/kle-serial
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Legend {
     /// The legend's text.
     pub text: String,
@@ -86,7 +86,7 @@ impl Default for Legend {
 }
 
 /// A struct representing a key switch.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct Switch {
     /// The switch mount. Typically either `"cherry"` or `"alps"`.
     pub mount: String,
@@ -97,7 +97,7 @@ pub struct Switch {
 }
 
 /// A struct representing a single key.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 #[allow(clippy::struct_excessive_bools)]
 pub struct Key<T = f64>
 where
@@ -200,7 +200,7 @@ where
 }
 
 /// The background style of a KLE layout.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct Background {
     /// The name of the background.
     ///
@@ -218,7 +218,7 @@ pub struct Background {
 }
 
 /// The metadata for the keyboard layout.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Metadata {
     /// Background colour for the layout.
     pub background_color: Color,
@@ -260,7 +260,7 @@ impl Default for Metadata {
 }
 
 /// A keyboard deserialised from a KLE JSON file.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct Keyboard<T = f64>
 where
     T: Real,
