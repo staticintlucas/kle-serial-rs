@@ -265,7 +265,7 @@ where
     pub(crate) fn new(kle: Vec<Vec<KleLegendsOrProps<T>>>) -> Self {
         let state = KleProps::default();
         let mut row_iter = kle.into_iter();
-        let key_iter = row_iter.next().unwrap_or(Vec::new()).into_iter();
+        let key_iter = row_iter.next().unwrap_or_default().into_iter();
         KleLayoutIterator {
             state,
             row_iter,
@@ -303,6 +303,8 @@ where
 
 #[cfg(test)]
 mod tests {
+    use isclose::assert_is_close;
+
     use super::*;
 
     #[test]
@@ -371,8 +373,9 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::too_many_lines)]
     fn test_kle_props_update() {
-        let props_obj = KlePropsObject {
+        let props_obj = KlePropsObject::<f64> {
             x: None,
             y: None,
             w: None,
@@ -402,21 +405,21 @@ mod tests {
         let mut props = KleProps::default();
         props.update(props_obj);
 
-        assert_eq!(props.x, 0.);
-        assert_eq!(props.y, 0.);
-        assert_eq!(props.w, 1.);
-        assert_eq!(props.h, 1.);
-        assert_eq!(props.x2, 0.);
-        assert_eq!(props.y2, 0.);
-        assert_eq!(props.w2, 1.);
-        assert_eq!(props.h2, 1.);
-        assert_eq!(props.l, false);
-        assert_eq!(props.n, false);
-        assert_eq!(props.d, false);
-        assert_eq!(props.r, 0.);
-        assert_eq!(props.rx, 0.);
-        assert_eq!(props.ry, 0.);
-        assert_eq!(props.g, false);
+        assert_is_close!(props.x, 0.0);
+        assert_is_close!(props.y, 0.0);
+        assert_is_close!(props.w, 1.0);
+        assert_is_close!(props.h, 1.0);
+        assert_is_close!(props.x2, 0.0);
+        assert_is_close!(props.y2, 0.0);
+        assert_is_close!(props.w2, 1.0);
+        assert_is_close!(props.h2, 1.0);
+        assert!(!props.l);
+        assert!(!props.n);
+        assert!(!props.d);
+        assert_is_close!(props.r, 0.0);
+        assert_is_close!(props.rx, 0.0);
+        assert_is_close!(props.ry, 0.0);
+        assert!(!props.g);
         assert_eq!(props.sm, "");
         assert_eq!(props.sb, "");
         assert_eq!(props.st, "");
@@ -429,10 +432,10 @@ mod tests {
         assert_eq!(props.fa, [FontSize::default(); NUM_LEGENDS]);
 
         let props_obj = KlePropsObject {
-            x: Some(1.),
-            y: Some(1.),
-            w: Some(2.),
-            h: Some(2.),
+            x: Some(1.0),
+            y: Some(1.0),
+            w: Some(2.0),
+            h: Some(2.0),
             x2: Some(1.5),
             y2: Some(1.5),
             w2: Some(2.5),
@@ -440,9 +443,9 @@ mod tests {
             l: Some(true),
             n: Some(true),
             d: Some(true),
-            r: Some(15.),
-            rx: Some(1.),
-            ry: Some(1.),
+            r: Some(15.0),
+            rx: Some(1.0),
+            ry: Some(1.0),
             g: Some(true),
             sm: Some("cherry".into()),
             sb: Some("cherry".into()),
@@ -461,20 +464,20 @@ mod tests {
         };
         props.update(props_obj);
 
-        assert_eq!(props.x, 2.); // rx adds for whatever reason
-        assert_eq!(props.y, 2.);
-        assert_eq!(props.w, 2.);
-        assert_eq!(props.h, 2.);
-        assert_eq!(props.x2, 1.5);
-        assert_eq!(props.y2, 1.5);
-        assert_eq!(props.w2, 2.5);
-        assert_eq!(props.h2, 2.5);
-        assert_eq!(props.l, true);
-        assert_eq!(props.n, true);
-        assert_eq!(props.d, true);
-        assert_eq!(props.r, 15.);
-        assert_eq!(props.rx, 1.);
-        assert_eq!(props.ry, 1.);
+        assert_is_close!(props.x, 2.0); // rx adds for whatever reason
+        assert_is_close!(props.y, 2.0);
+        assert_is_close!(props.w, 2.0);
+        assert_is_close!(props.h, 2.0);
+        assert_is_close!(props.x2, 1.5);
+        assert_is_close!(props.y2, 1.5);
+        assert_is_close!(props.w2, 2.5);
+        assert_is_close!(props.h2, 2.5);
+        assert!(props.l);
+        assert!(props.n);
+        assert!(props.d);
+        assert_is_close!(props.r, 15.0);
+        assert_is_close!(props.rx, 1.0);
+        assert_is_close!(props.ry, 1.0);
         assert!(props.g);
         assert_eq!(props.sm, "cherry");
         assert_eq!(props.sb, "cherry");
@@ -532,17 +535,17 @@ mod tests {
         };
         props.next_key();
 
-        assert_eq!(props.x, 5.);
-        assert_eq!(props.y, 0.);
-        assert_eq!(props.w, 1.);
-        assert_eq!(props.h, 1.);
-        assert_eq!(props.x2, 0.);
-        assert_eq!(props.y2, 0.);
-        assert_eq!(props.w2, 1.);
-        assert_eq!(props.h2, 1.);
-        assert_eq!(props.l, false);
-        assert_eq!(props.n, false);
-        assert_eq!(props.d, false);
+        assert_is_close!(props.x, 5.0);
+        assert_is_close!(props.y, 0.0);
+        assert_is_close!(props.w, 1.0);
+        assert_is_close!(props.h, 1.0);
+        assert_is_close!(props.x2, 0.0);
+        assert_is_close!(props.y2, 0.0);
+        assert_is_close!(props.w2, 1.0);
+        assert_is_close!(props.h2, 1.0);
+        assert!(!props.l);
+        assert!(!props.n);
+        assert!(!props.d);
     }
 
     #[test]
@@ -553,17 +556,17 @@ mod tests {
         };
         props.next_line();
 
-        assert_eq!(props.x, 0.);
-        assert_eq!(props.y, 1.);
-        assert_eq!(props.w, 1.);
-        assert_eq!(props.h, 1.);
-        assert_eq!(props.x2, 0.);
-        assert_eq!(props.y2, 0.);
-        assert_eq!(props.w2, 1.);
-        assert_eq!(props.h2, 1.);
-        assert_eq!(props.l, false);
-        assert_eq!(props.n, false);
-        assert_eq!(props.d, false);
+        assert_is_close!(props.x, 0.0);
+        assert_is_close!(props.y, 1.0);
+        assert_is_close!(props.w, 1.0);
+        assert_is_close!(props.h, 1.0);
+        assert_is_close!(props.x2, 0.0);
+        assert_is_close!(props.y2, 0.0);
+        assert_is_close!(props.w2, 1.0);
+        assert_is_close!(props.h2, 1.0);
+        assert!(!props.l);
+        assert!(!props.n);
+        assert!(!props.d);
     }
 
     #[test]
@@ -580,17 +583,17 @@ mod tests {
             assert_eq!(res.as_ref().unwrap().color, color::LEGEND);
         }
         assert_eq!(key.color, color::KEY);
-        assert_eq!(key.x, 0.);
-        assert_eq!(key.y, 0.);
-        assert_eq!(key.width, 1.);
-        assert_eq!(key.height, 1.);
-        assert_eq!(key.x2, 0.);
-        assert_eq!(key.y2, 0.);
-        assert_eq!(key.width2, 1.);
-        assert_eq!(key.height2, 1.);
-        assert_eq!(key.rotation, 0.);
-        assert_eq!(key.rx, 0.);
-        assert_eq!(key.ry, 0.);
+        assert_is_close!(key.x, 0.0);
+        assert_is_close!(key.y, 0.0);
+        assert_is_close!(key.width, 1.0);
+        assert_is_close!(key.height, 1.0);
+        assert_is_close!(key.x2, 0.0);
+        assert_is_close!(key.y2, 0.0);
+        assert_is_close!(key.width2, 1.0);
+        assert_is_close!(key.height2, 1.0);
+        assert_is_close!(key.rotation, 0.0);
+        assert_is_close!(key.rx, 0.0);
+        assert_is_close!(key.ry, 0.0);
         assert_eq!(key.profile, "");
         assert_eq!(key.switch.mount, "");
         assert_eq!(key.switch.brand, "");
@@ -647,9 +650,9 @@ mod tests {
         let keys: Vec<_> = iterator.collect();
 
         assert_eq!(keys.len(), 4);
-        assert_eq!(keys[0].x, 0.0);
-        assert_eq!(keys[1].x, 1.0);
-        assert_eq!(keys[2].x, 1.5);
-        assert_eq!(keys[3].x, 0.0);
+        assert_is_close!(keys[0].x, 0.0);
+        assert_is_close!(keys[1].x, 1.0);
+        assert_is_close!(keys[2].x, 1.5);
+        assert_is_close!(keys[3].x, 0.0);
     }
 }

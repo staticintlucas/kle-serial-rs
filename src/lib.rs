@@ -321,6 +321,8 @@ where
 
 #[cfg(test)]
 mod tests {
+    use isclose::assert_is_close;
+
     use super::*;
 
     #[test]
@@ -328,7 +330,7 @@ mod tests {
         let legend = Legend::default();
 
         assert_eq!(legend.text, "");
-        assert_eq!(usize::from(legend.size), 3);
+        assert_eq!(legend.size, 3);
         assert_eq!(legend.color, Color::new(0, 0, 0, 255));
     }
 
@@ -340,17 +342,17 @@ mod tests {
             assert!(leg.is_none());
         }
         assert_eq!(key.color, Color::new(204, 204, 204, 255));
-        assert_eq!(key.x, 0.);
-        assert_eq!(key.y, 0.);
-        assert_eq!(key.width, 1.);
-        assert_eq!(key.height, 1.);
-        assert_eq!(key.x2, 0.);
-        assert_eq!(key.y2, 0.);
-        assert_eq!(key.width2, 1.);
-        assert_eq!(key.height2, 1.);
-        assert_eq!(key.rotation, 0.);
-        assert_eq!(key.rx, 0.);
-        assert_eq!(key.ry, 0.);
+        assert_is_close!(key.x, 0.0);
+        assert_is_close!(key.y, 0.0);
+        assert_is_close!(key.width, 1.0);
+        assert_is_close!(key.height, 1.0);
+        assert_is_close!(key.x2, 0.0);
+        assert_is_close!(key.y2, 0.0);
+        assert_is_close!(key.width2, 1.0);
+        assert_is_close!(key.height2, 1.0);
+        assert_is_close!(key.rotation, 0.0);
+        assert_is_close!(key.rx, 0.0);
+        assert_is_close!(key.ry, 0.0);
         assert_eq!(key.profile, "");
         assert_eq!(key.switch.mount, "");
         assert_eq!(key.switch.brand, "");

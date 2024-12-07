@@ -168,7 +168,7 @@ mod tests {
         let expected = ["A", "", "B", "", "", "", "C", "", "D", "", "", ""];
 
         let result = realign_legends(legends.clone(), Alignment::new(4).unwrap());
-        let result_text = result.map(|l| l.map(|l| l.text).unwrap_or(String::new()));
+        let result_text = result.map(|l| l.map(|l| l.text).unwrap_or_default());
 
         assert_eq!(result_text, expected);
     }

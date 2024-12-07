@@ -305,7 +305,7 @@ mod tests {
         assert_matches!(result3.meta.notes, Some(notes) if notes == "'tis a test");
         assert_eq!(result3.layout.len(), 0);
 
-        let result4: KleKeyboard = serde_json::from_str(r#"[]"#).unwrap();
+        let result4: KleKeyboard = serde_json::from_str(r"[]").unwrap();
         assert!(result4.meta.name.is_none());
         assert_eq!(result4.layout.len(), 0);
 
