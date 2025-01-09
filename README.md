@@ -9,8 +9,10 @@
 [codecov]: https://app.codecov.io/github/staticintlucas/kle-serial-rs
 [crates]: https://crates.io/crates/kle-serial
 
-A Rust library for deserialising [Keyboard Layout Editor] files.
-Designed to be used in conjunction with [`serde_json`] to deserialize JSON files exported from KLE.
+<!-- cargo-rdme start -->
+
+A Rust library for deserialising [Keyboard Layout Editor] files. Designed to be used in
+conjunction with [`serde_json`] to deserialize JSON files exported from KLE.
 
 ## Example
 
@@ -40,7 +42,9 @@ assert!(keyboard.keys[0].legends[1].is_none());
 
 [Keyboard Layout Editor]: http://www.keyboard-layout-editor.com/
 [`serde_json`]: https://crates.io/crates/serde_json
-[example]: doc/example.png
+[example]: https://raw.githubusercontent.com/staticintlucas/kle-serial-rs/main/doc/example.png
+
+<!-- cargo-rdme end -->
 
 ## Licence
 

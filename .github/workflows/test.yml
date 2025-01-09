@@ -14,6 +14,10 @@ jobs:
         with:
           toolchain: stable
           components: rustfmt, clippy
+      - name: Setup tools
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-rdme
       - name: Check formatting
         run: cargo fmt -- --check
       - name: Run Clippy
@@ -24,6 +28,8 @@ jobs:
         run: cargo doc --no-deps --document-private-items
         env:
           RUSTDOCFLAGS: -D warnings
+      - name: Check README
+        run: cargo rdme --check
 
   test:
     name: Build & Test
