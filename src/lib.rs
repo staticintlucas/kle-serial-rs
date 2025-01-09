@@ -9,7 +9,9 @@
 //! ![example]
 //!
 //! ```
-//! use kle_serial::Keyboard; // Equivalent to kle_serial::Keyboard<f64> or kle_serial::f64::Keyboard
+//! // This is equivalent to kle_serial::Keyboard<f64> or kle_serial::f64::Keyboard. To use f32 for
+//! // all positions and sizes, use kle_serial::Keyboard<f32> or kle_serial::f32::Keyboard instead.
+//! use kle_serial::Keyboard;
 //!
 //! let keyboard: Keyboard = serde_json::from_str(
 //!     r#"[
