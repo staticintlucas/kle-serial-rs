@@ -131,7 +131,7 @@ where
     /// The actual position of the top left corner can be found using:
     ///
     /// ```
-    /// # let key = kle_serial::Key::default();
+    /// # let key = kle_serial::Key::<f64>::default();
     /// let x = key.x.min(key.x + key.x2);
     /// ```
     ///
@@ -151,7 +151,7 @@ where
     /// The actual position of the top left corner can be found using:
     ///
     /// ```
-    /// # let key = kle_serial::Key::default();
+    /// # let key = kle_serial::Key::<f64>::default();
     /// let y = key.y.min(key.y + key.y2);
     /// ```
     ///
