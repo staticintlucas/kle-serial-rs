@@ -14,16 +14,16 @@ jobs:
         with:
           toolchain: stable
           components: rustfmt, clippy
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: 3.x
-      - name: Run pre-commit
-        uses: pre-commit/action@v3.0.1
-        with:
-          extra_args: --all-files
+      - name: Check formatting
+        run: cargo fmt -- --check
+      - name: Run Clippy
+        run: cargo clippy
         env:
-          SKIP: cargo-test
+          RUSTFLAGS: -D warnings
+      - name: Build documentation
+        run: cargo doc --no-deps --document-private-items
+        env:
+          RUSTDOCFLAGS: -D warnings
 
   test:
     name: Build & Test
