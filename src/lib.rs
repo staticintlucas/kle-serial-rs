@@ -9,8 +9,8 @@
 //! ![example]
 //!
 //! ```
-//! // This is equivalent to kle_serial::Keyboard<f64> or kle_serial::f64::Keyboard. To use f32 for
-//! // all positions and sizes, use kle_serial::Keyboard<f32> or kle_serial::f32::Keyboard instead.
+//! // kle_serial::Keyboard uses f64 coordinates by default. If you need f32 coordinates use
+//! // kle_serial::Keyboard<f32> or kle_serial::f32::Keyboard instead.
 //! use kle_serial::Keyboard;
 //!
 //! let keyboard: Keyboard = serde_json::from_str(
@@ -62,16 +62,20 @@ pub(crate) mod color {
 
 /// A struct representing a single legend.
 ///
-/// **Note**: This is called a `label` in the official TypeScript [`kle-serial`] library and some
-/// other deserialisation libraries. It is called `Legend` here to follow the common terminology
-/// and match KLE's own UI.
+/// <div class="warning">
+///
+/// This is also referred to as a `label` in the official TypeScript [`kle-serial`] library as well
+/// as some others. It is named `Legend` here to follow the more prevalent terminology and to match
+/// KLE's own UI.
 ///
 /// [`kle-serial`]: https://github.com/ijprest/kle-serial
+///
+/// </div>
 #[derive(Debug, Clone, PartialEq)]
 pub struct Legend {
     /// The legend's text.
     pub text: String,
-    /// The legend size (in KLE's font size unit).
+    /// The legend size (in KLE's font size unit). KLE clamps this to the range `1..=9`.
     pub size: usize,
     /// The legend colour.
     pub color: Color,
@@ -116,49 +120,91 @@ where
     pub legends: [Option<Legend>; NUM_LEGENDS],
     /// The colour of the key
     pub color: Color,
-    /// The X position of the key in keyboard units (19.05 mm or 0.75 in).
+    /// The X position of the key measured in keyboard units (typically 19.05 mm or 0.75 in).
     ///
-    /// **Note**: KLE has some strange behaviour when it comes to stepped and L-shaped keys. The
-    /// 'true' X position will be less if the key's `x2` field is negative. This behaviour can be
-    /// observed by placing an ISO enter in KLE; `x` is 0.25 and `x2` is &minus;0.25.
+    /// <div class="warning">
+    ///
+    /// KLE has some strange behaviour when it comes to positioning stepped and L-shaped keys.
+    /// The 'true' X position of the top left corner will be less if the key's `x2` field is
+    /// negative.
+    ///
+    /// The actual position of the top left corner can be found using:
+    ///
+    /// ```
+    /// # let key = kle_serial::Key::default();
+    /// let x = key.x.min(key.x + key.x2);
+    /// ```
+    ///
+    /// This behaviour can be observed by placing an ISO enter in the top left corner in KLE;
+    /// `x` is 0.25 and `x2` is &minus;0.25.
+    ///
+    /// </div>
     pub x: T,
-    /// The Y position of the key in keyboard units (19.05 mm or 0.75 in).
+    /// The Y position of the key measured in keyboard units (typically 19.05 mm or 0.75 in).
     ///
-    /// **Note**: KLE has some strange behaviour when it comes to stepped and L-shaped keys. The
-    /// 'true' Y position will be less if the key's `y2` field is negative. This behaviour can be
-    /// observed by placing an ISO enter in KLE; `x` is 0.25 and `x2` is &minus;0.25.
+    /// <div class="warning">
+    ///
+    /// KLE has some strange behaviour when it comes to positioning stepped and L-shaped keys.
+    /// The 'true' Y position of the top left corner will be less if the key's `y2` field is
+    /// negative.
+    ///
+    /// The actual position of the top left corner can be found using:
+    ///
+    /// ```
+    /// # let key = kle_serial::Key::default();
+    /// let y = key.y.min(key.y + key.y2);
+    /// ```
+    ///
+    /// This behaviour can be observed by placing an ISO enter in the top left corner in KLE;
+    /// `x` is 0.25 and `x2` is &minus;0.25.
+    ///
+    /// </div>
     pub y: T,
-    /// The width of the key in keyboard units (19.05 mm or 0.75 in).
+    /// The width of the key measured in keyboard units (typically 19.05 mm or 0.75 in).
     pub width: T,
-    /// The height of the key in keyboard units (19.05 mm or 0.75 in).
+    /// The height of the key measured in keyboard units (typically 19.05 mm or 0.75 in).
     pub height: T,
-    /// The relative X position of a stepped or L-shaped part of the key.
+    /// The relative X position of a stepped or L-shaped part of the key. Measured in keyboard units
+    /// (typically 19.05 mm or 0.75 in).
     ///
-    /// This is set to 0.0 for regular keys, but is used for stepped caps lock and ISO enter keys,
+    /// This is set to `0.0` for regular keys, but is used for stepped caps lock and ISO enter keys,
     /// amongst others.
     pub x2: T,
-    /// The relative Y position of a stepped or L-shaped part of the key.
+    /// The relative Y position of a stepped or L-shaped part of the key. Measured in keyboard units
+    /// (typically 19.05 mm or 0.75 in).
     ///
-    /// This is set to 0.0 for regular keys, but is used for stepped caps lock and ISO enter keys,
+    /// This is set to `0.0` for regular keys, but is used for stepped caps lock and ISO enter keys,
     /// amongst others.
     pub y2: T,
-    /// The width of a stepped or L-shaped part of the key.
+    /// The width of a stepped or L-shaped part of the key. Measured in keyboard units (typically
+    /// 19.05 mm or 0.75 in).
     ///
-    /// This is equal to the width for regular keys, but is used for stepped caps lock and ISO
+    /// This is equal to `width` for regular keys, but is used for stepped caps lock and ISO
     /// enter keys, amongst others.
     pub width2: T,
-    /// The height of a stepped or L-shaped part of the key.
+    /// The height of a stepped or L-shaped part of the key. Measured in keyboard units (typically
+    /// 19.05 mm or 0.75 in).
     ///
-    /// This is equal to the height for regular keys, but is used for stepped caps lock and ISO
+    /// This is equal to `height` for regular keys, but is used for stepped caps lock and ISO
     /// enter keys, amongst others.
     pub height2: T,
-    /// The rotation of the key in degrees.
+    /// The rotation of the key in degrees. Positive rotation values are clockwise.
     pub rotation: T,
-    /// The X coordinate for the centre of rotation of the key.
+    /// The X coordinate for the centre of rotation of the key. Measured in keyboard units
+    /// (typically 19.05 mm or 0.75 in) from the top left corner of the layout.
     pub rx: T,
-    /// The Y coordinate for the centre of rotation of the key.
+    /// The Y coordinate for the centre of rotation of the key. Measured in keyboard units
+    /// (typically 19.05 mm or 0.75 in) from the top left corner of the layout.
     pub ry: T,
-    /// The keycap profile of the key.
+    /// The keycap profile and row number of the key.
+    ///
+    /// KLE uses special rendering for `"SA"`, `"DSA"`, `"DCS"`, `"OEM"`, `"CHICKLET"`, and `"FLAT"`
+    /// profiles. It expects the row number to be one of `"R1"`, `"R2"`, `"R3"`, `"R4"`, `"R5"`, or
+    /// `"SPACE"`, although it only uses special rendering for `"SPACE"`.
+    ///
+    /// KLE suggests the format `"<profile> [<row>]"`, but it will recognise any string containing
+    /// one of its supported profiles and/or rows. Any value is considered valid, but empty or
+    /// unrecognised values are rendered using the unnamed default profile.
     pub profile: String,
     /// The key switch.
     pub switch: Switch,
@@ -211,7 +257,7 @@ pub struct Background {
     pub name: String,
     /// The CSS style of the background.
     ///
-    /// When generated by KLE, this sets the [`background-image`] CSS property to a relative url
+    /// When generated by KLE, this sets the CSS [`background-image`] property to a relative url
     /// where the associated image is located. For example the *Carbon fibre 1* background will set
     /// `style` to `"background-image: url('/bg/carbonfibre/carbon_texture1879.png');"`.
     ///
@@ -234,7 +280,7 @@ pub struct Metadata {
     pub name: String,
     /// The author of the layout.
     pub author: String,
-    /// The default switch type used by the layout. This can be set separately for individual keys.
+    /// The default switch type used in this layout. This can be set separately for individual keys.
     pub switch: Switch,
     /// Whether the switch is plate mounted.
     pub plate_mount: bool,
