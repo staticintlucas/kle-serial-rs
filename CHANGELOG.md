@@ -1,5 +1,18 @@
 # Change Log
 
+## [v0.3.2](https://github.com/staticintlucas/kle-serial-rs/releases/tag/v0.3.2)
+
+### Changes
+
+* Update CI workflow to use lock file for MSRV testing
+* Removed pre-commit hooks
+* Improvements to parts of the documentation
+* Added cargo-rdme to keep README in sync with documetation
+
+### Fixes
+
+* Fix error in key position for keys placed to the right of a stepped key
+
 ## [v0.3.1](https://github.com/staticintlucas/kle-serial-rs/releases/tag/v0.3.1)
 
 ### New
