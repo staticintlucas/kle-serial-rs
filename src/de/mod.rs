@@ -151,7 +151,7 @@ where
     #[inline]
     fn next_key(&mut self) {
         // Increment x
-        self.x = self.x + self.w.max(self.x2 + self.w2);
+        self.x = self.x + self.w;
         // Reset per-key properties
         self.w = T::one();
         self.h = T::one();
