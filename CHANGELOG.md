@@ -1,5 +1,12 @@
 # Change Log
 
+## [v0.3.4](https://github.com/staticintlucas/kle-serial-rs/releases/tag/v0.3.4)
+
+### Changes
+
+* Updated dependencies
+* Increased MSRV to 1.85 to match dependencies
+
 ## [v0.3.3](https://github.com/staticintlucas/kle-serial-rs/releases/tag/v0.3.3)
 
 ### Changes
